@@ -33,7 +33,7 @@ export const Slide12_CursorTips: React.FC = () => {
   ];
 
   return (
-    <SlideBase sectionNumber="05" sectionTitle="Cursor 실무 팁">
+    <SlideBase sectionNumber="04" sectionTitle="Cursor 실무: 컨텍스트 관리법">
       <AnimatedText delay={0}>
         <div style={{ fontSize: 48, fontWeight: 900, color: COLORS.text, marginBottom: 36 }}>
           비개발자도 바로 쓸 수 있는 컨텍스트 관리

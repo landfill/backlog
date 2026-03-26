@@ -49,7 +49,7 @@ export const Slide08_Paradigm: React.FC = () => {
   const arrows = [arrow1P, arrow2P];
 
   return (
-    <SlideBase sectionNumber="03" sectionTitle="프롬프트 → 컨텍스트 엔지니어링으로">
+    <SlideBase sectionNumber="03" sectionTitle="컨텍스트 엔지니어링: 질문이 아니라 맥락이다">
       <AnimatedText delay={0}>
         <div style={{ fontSize: 52, fontWeight: 900, color: COLORS.text, marginBottom: 56 }}>
           패러다임 전환
@@ -152,7 +152,7 @@ export const Slide08_Paradigm: React.FC = () => {
           2026년 업계의 결론:
           <br />
           <span style={{ color: COLORS.accentGlow, fontWeight: 700 }}>
-            어떤 AI 모델을 쓰느냐보다, 그 AI가 일하는 환경을 어떻게 만드느냐가 결과를 결정합니다.
+            어떤 AI 모델을 쓰느냐보다, 그 AI에게 무엇을 전달하느냐가 결과를 결정합니다.
           </span>
         </div>
       </AnimatedText>

@@ -10,7 +10,7 @@ export const Slide10_ContextReset: React.FC = () => {
   const { fps } = useVideoConfig();
 
   return (
-    <SlideBase sectionNumber="03" sectionTitle="프롬프트 → 컨텍스트 엔지니어링으로">
+    <SlideBase sectionNumber="04" sectionTitle="Cursor 실무: 컨텍스트 관리법">
       <AnimatedText delay={0}>
         <div style={{ fontSize: 52, fontWeight: 900, color: COLORS.text, marginBottom: 48 }}>
           컨텍스트가 가득 찰 때 3가지 선택
@@ -46,13 +46,13 @@ export const Slide10_ContextReset: React.FC = () => {
               marginBottom: 12,
             }}
           >
-            ❗ 핵심 문제
+            ❗ 핵심
           </div>
           <div style={{ fontSize: 27, color: COLORS.text, lineHeight: 1.7 }}>
             어떤 방식이든 새로 시작한 AI는 기억이 없습니다.
             <br />
-            <span style={{ color: COLORS.warning }}>
-              바이브코딩 세션에서 2시간 쌓아온 결정, 실패한 시도, 설계 이유가 전부 날아갑니다.
+            <span style={{ color: COLORS.accentGlow }}>
+              그래서 스킬 파일과 <code style={{ fontFamily: "'Paperlogy', monospace" }}>_context/</code> 폴더가 중요합니다. 기록해두면 즉시 전달할 수 있습니다.
             </span>
           </div>
         </div>

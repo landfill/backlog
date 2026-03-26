@@ -15,15 +15,15 @@ export const Slide03_BCGResearch: React.FC = () => {
   ];
 
   return (
-    <SlideBase sectionNumber="04" sectionTitle="하네스: AI의 업무 환경 설계">
+    <SlideBase sectionNumber="07" sectionTitle="다음 단계: 하네스 엔지니어링">
       <AnimatedText delay={0}>
-        <div style={{ fontSize: 52, fontWeight: 900, color: COLORS.text, marginBottom: 12, lineHeight: 1.2 }}>
-          하네스(Harness)란 무엇인가
+        <div style={{ fontSize: 48, fontWeight: 900, color: COLORS.text, marginBottom: 12, lineHeight: 1.2 }}>
+          업계는 이미 한 단계 더 나아가고 있습니다
         </div>
       </AnimatedText>
       <AnimatedText delay={8}>
-        <div style={{ fontSize: 28, color: COLORS.textMuted, marginBottom: 40 }}>
-          AI가 올바른 방향으로 일할 수 있도록 둘러싼 <strong style={{ color: COLORS.accentGlow }}>업무 환경 전체</strong>
+        <div style={{ fontSize: 26, color: COLORS.textMuted, marginBottom: 40 }}>
+          하네스(Harness) = AI가 올바른 방향으로 일할 수 있도록 둘러싼 <strong style={{ color: COLORS.accentGlow }}>업무 환경 전체</strong>
         </div>
       </AnimatedText>
 
@@ -118,7 +118,7 @@ export const Slide03_BCGResearch: React.FC = () => {
             textAlign: "center",
           }}
         >
-          위 표의 오른쪽 열, 그 세 가지가 바로 하네스의 구성 요소입니다
+          💡 오늘 배운 스킬 파일, 폴더 구조, 규칙 파일도 하네스의 일부입니다
         </div>
       </AnimatedText>
     </SlideBase>

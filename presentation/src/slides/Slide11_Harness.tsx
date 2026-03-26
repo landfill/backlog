@@ -51,10 +51,10 @@ export const Slide11_Harness: React.FC = () => {
   ];
 
   return (
-    <SlideBase sectionNumber="04" sectionTitle="하네스: AI의 업무 환경 설계">
+    <SlideBase sectionNumber="07" sectionTitle="다음 단계: 하네스 엔지니어링">
       <AnimatedText delay={0}>
         <div style={{ fontSize: 48, fontWeight: 900, color: COLORS.text, marginBottom: 36 }}>
-          하네스의 세 가지 요소
+          하네스의 세 가지 요소 — 미리보기
         </div>
       </AnimatedText>
 
@@ -139,7 +139,7 @@ export const Slide11_Harness: React.FC = () => {
             textAlign: "center",
           }}
         >
-          💡 규칙이 명확할수록 AI는 그 안에서 더 자유롭고 정확하게 일합니다
+          💡 이런 방향으로 흐름이 가고 있다는 것만 기억해주세요
         </div>
       </AnimatedText>
     </SlideBase>

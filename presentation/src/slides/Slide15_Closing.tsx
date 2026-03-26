@@ -8,8 +8,8 @@ export const Slide15_Closing: React.FC = () => {
 
   const closingLines = [
     "AI는 이제 누구나 쓸 수 있는 도구입니다.",
-    "하지만 차이를 만드는 건 프롬프트가 아니라 컨텍스트,",
-    "그리고 그 컨텍스트를 지속 가능하게 만드는 건 하네스입니다.",
+    "하지만 차이를 만드는 건 프롬프트가 아니라 컨텍스트입니다.",
+    "트렌드는 이미 한 발 더 — 하네스로 나아가고 있습니다.",
   ];
 
   const takeaways = [
@@ -17,11 +17,11 @@ export const Slide15_Closing: React.FC = () => {
     "AI는 받은 맥락을 증폭하는 도구다. 좋은 맥락 → 좋은 결과, 잘못된 맥락 → 그럴듯한 오답.",
     "컨텍스트 윈도우 = AI의 작업 메모리. 가득 차면 AI 품질이 저하된다.",
     "기억은 압축된다. 결론만 남고 맥락은 사라진다. 기록이 있어야 AI에게 전달할 수 있다.",
-    "새 에이전트는 기억이 없다. 그래서 하네스(업무 매뉴얼 + 가드레일 + 정기 점검)가 필요하다.",
-    "AI 성능은 모델보다 환경이 결정한다. 규칙이 명확할수록 AI는 더 정확하게 일한다.",
+    "스킬 파일은 코드가 아닙니다. 누구든 텍스트로 만들어 쓸 수 있습니다.",
+    "트렌드는 컨텍스트를 넘어 하네스(AI 업무 환경 설계)로 향하고 있다.",
   ];
 
-  const bigTakeaway = "스킬 파일은 코드가 아닙니다. 누구든 텍스트로 만들어 쓸 수 있습니다.";
+  const bigTakeaway = "오늘 배운 컨텍스트 관리가 하네스의 출발점이다. 이미 첫 걸음을 뗐다.";
 
   return (
     <AbsoluteFill
@@ -92,7 +92,7 @@ export const Slide15_Closing: React.FC = () => {
                   기억은 압축됩니다. 기록만이 남습니다.
                 </div>
                 <div style={{ fontSize: 24, color: COLORS.textMuted, marginBottom: 12 }}>
-                  업무 매뉴얼을 만들고, 규칙을 세우고, 주기적으로 정리하세요.
+                  내 경험과 판단을 파일로 남기세요. AI에게 건네세요.
                 </div>
                 <div
                   style={{
@@ -104,9 +104,9 @@ export const Slide15_Closing: React.FC = () => {
                     backgroundClip: "text",
                   }}
                 >
-                  AI의 업무 환경을 설계하는 사람이
+                  오늘 배운 것이
                   <br />
-                  AI를 제대로 쓰는 사람입니다.
+                  그 여정의 출발점입니다.
                 </div>
               </div>
             );
@@ -119,7 +119,7 @@ export const Slide15_Closing: React.FC = () => {
                 style={{
                   marginTop: 24,
                   fontSize: 28,
-                  fontStyle: "italic",
+                  fontWeight: 400,
                   color: COLORS.textDim,
                   opacity: interpolate(p, [0, 1], [0, 1]),
                 }}

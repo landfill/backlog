@@ -33,7 +33,7 @@ export const Slide14_Demo: React.FC = () => {
   ];
 
   return (
-    <SlideBase sectionNumber="07" sectionTitle="데모">
+    <SlideBase sectionNumber="06" sectionTitle="데모">
       <AnimatedText delay={0}>
         <div style={{ fontSize: 52, fontWeight: 900, color: COLORS.text, marginBottom: 16 }}>
           코드가 아닌 텍스트

@@ -13,7 +13,7 @@ export const Slide09_ContextExample: React.FC = () => {
   const tipP = spring({ frame: frame - 55, fps, config: { damping: 200 }, durationInFrames: 30 });
 
   return (
-    <SlideBase sectionNumber="03" sectionTitle="프롬프트 → 컨텍스트 엔지니어링으로">
+    <SlideBase sectionNumber="03" sectionTitle="컨텍스트 엔지니어링: 질문이 아니라 맥락이다">
       <AnimatedText delay={0}>
         <div style={{ fontSize: 48, fontWeight: 900, color: COLORS.text, marginBottom: 40 }}>
           전달 방식이 결과를 바꿉니다

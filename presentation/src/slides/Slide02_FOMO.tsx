@@ -49,7 +49,7 @@ export const Slide02_FOMO: React.FC = () => {
           marginBottom: 48,
         }}
       >
-        <div style={{ fontSize: 30, color: COLORS.textMuted, lineHeight: 1.8, fontStyle: "italic" }}>
+        <div style={{ fontSize: 30, color: COLORS.textMuted, lineHeight: 1.8 }}>
           "AI 시대에 나만 뒤처지는 것 같은 불안, 다들 느끼시죠.
           <br />
           근데 그 불안은 공부가 부족해서가 아닙니다.

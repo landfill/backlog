@@ -18,7 +18,7 @@ export const Slide13_SkillsForAll: React.FC = () => {
   const tasks = ["기획서 초안", "WBS 작성", "태깅 정의서", "테스트 시나리오", "회의록 정리", "뉴스레터 작성", "문서 요약", "브레인스톰"];
 
   return (
-    <SlideBase sectionNumber="06" sectionTitle="스킬은 개발자만의 것이 아닙니다">
+    <SlideBase sectionNumber="05" sectionTitle="스킬은 개발자만의 것이 아닙니다">
       <div style={{ display: "flex", gap: 60 }}>
         <div style={{ flex: 1.4 }}>
           <AnimatedText delay={0}>

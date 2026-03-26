@@ -79,7 +79,7 @@ export const Slide01_Title: React.FC = () => {
           marginTop: 48,
           color: COLORS.textDim,
           fontSize: 36,
-          fontStyle: "italic",
+          fontWeight: 400,
           opacity: interpolate(quoteProgress, [0, 1], [0, 0.7]),
         }}
       >

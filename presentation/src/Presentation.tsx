@@ -26,21 +26,21 @@ const FPS = 30;
 // 각 슬라이드 표시 시간 (초 → 프레임)
 const SLIDE_DURATIONS = [
   10, // 01 타이틀
-  10, // 02 FOMO
-  10, // 03 BCG 연구
-  10, // 04 컨텍스트 윈도우
-  9,  // 05 윈도우 구성요소
-  10, // 컨텍스트 윈도우 성장 시각화
+  10, // 02 오프닝 (FOMO)
+  10, // 03 컨텍스트 윈도우 — Section 02
+  9,  // 04 윈도우 구성요소
+  10, // 05 컨텍스트 성장 시각화
   10, // 06 모델 비교
   9,  // 07 오버플로우 증상
-  9,  // 08 패러다임
+  9,  // 08 패러다임 전환 — Section 03
   10, // 09 컨텍스트 예시
-  9,  // 10 컨텍스트 리셋
-  10, // 11 하니스
-  10, // 12 Cursor 팁
-  10, // 13 비개발자 스킬
-  10, // 14 데모
-  14, // 15 클로징
+  10, // 10 Cursor 실무 — Section 04
+  9,  // 11 가득 찰 때 대처
+  10, // 12 해외 사례 — Section 05
+  10, // 13 데모 — Section 06
+  10, // 14 하네스 소개 — Section 07
+  10, // 15 하네스 3요소
+  14, // 16 클로징 — Section 08
 ].map((s) => s * FPS);
 
 const TRANSITION_FRAMES = 18;
@@ -55,12 +55,12 @@ const slides = [
   Slide07_OverflowSymptoms,
   Slide08_Paradigm,
   Slide09_ContextExample,
-  Slide10_ContextReset,
-  Slide03_BCGResearch,
-  Slide11_Harness,
   Slide12_CursorTips,
+  Slide10_ContextReset,
   Slide13_SkillsForAll,
   Slide14_Demo,
+  Slide03_BCGResearch,
+  Slide11_Harness,
   Slide15_Closing,
 ];
 
@@ -68,20 +68,20 @@ const slides = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const transitions: any[] = [
   fade(),       // 타이틀→오프닝
-  fade(),       // 오프닝→컨텍스트윈도우 (섹션 전환)
+  fade(),       // 오프닝→컨텍스트윈도우 (섹션 전환 01→02)
   wipe({ direction: "from-left" }),    // 윈도우→구성요소
   wipe({ direction: "from-left" }),   // 구성요소→컨텍스트성장
   slide({ direction: "from-right" }), // 컨텍스트성장→모델비교
   wipe({ direction: "from-left" }),   // 모델비교→오버플로우
-  fade(),       // 오버플로우→패러다임 (섹션 전환)
+  fade(),       // 오버플로우→패러다임 (섹션 전환 02→03)
   slide({ direction: "from-right" }), // 패러다임→컨텍스트예시
-  wipe({ direction: "from-left" }),   // 예시→리셋
-  fade(),       // 리셋→하네스소개 (섹션 전환)
+  fade(),       // 컨텍스트예시→Cursor실무 (섹션 전환 03→04)
+  wipe({ direction: "from-left" }),   // Cursor실무→가득찰때
+  fade(),       // 가득찰때→해외사례 (섹션 전환 04→05)
+  slide({ direction: "from-right" }), // 해외사례→데모 (05→06)
+  fade(),       // 데모→하네스소개 (섹션 전환 06→07)
   slide({ direction: "from-right" }), // 하네스소개→3요소
-  fade(),       // 하니스→Cursor팁 (섹션 전환)
-  fade(),       // Cursor팁→비개발자 (섹션 전환)
-  slide({ direction: "from-right" }), // 비개발자→데모
-  fade(),       // 데모→클로징
+  fade(),       // 하네스→클로징 (07→08)
 ];
 
 export const Presentation: React.FC = () => {
