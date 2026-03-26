@@ -117,13 +117,14 @@ html, body { margin: 0; padding: 0; background: #0A0E1A; overflow: hidden; }
 .reveal table tr.hl td { background: rgba(99,102,241,0.12); }
 .reveal table td.accent { color: #818CF8; font-weight: 700; }
 
-/* ── 웹캠 UI (제스처 — 보존) ─────────────────── */
+/* ── 웹캠 UI (제스처 — 숨김, 핸드트래킹은 동작) ─────────────────── */
 #gesture-ui {
   position: fixed; bottom: 20px; right: 20px;
   width: 160px; z-index: 1000;
   border-radius: 8px; overflow: hidden; opacity: 0.85;
   background: #111827;
   border: 1px solid rgba(99,102,241,0.25);
+  visibility: hidden;
 }
 #webcam { width: 160px; height: 120px; object-fit: cover; display: block; transform: scaleX(-1); }
 #landmark-canvas { position: absolute; top: 0; left: 0; width: 160px; height: 120px; transform: scaleX(-1); }
