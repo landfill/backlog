@@ -1,0 +1,27 @@
+{
+  "name": "ai-education-presentation",
+  "version": "1.0.0",
+  "description": "AI 교육 시나리오 발표 자료 - 컨텍스트 엔지니어링",
+  "scripts": {
+    "start": "vite",
+    "studio": "remotion studio",
+    "render": "remotion render AIEducation --output out/presentation.mp4",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.440",
+    "@remotion/player": "^4.0.440",
+    "@remotion/transitions": "^4.0.440",
+    "@vitejs/plugin-react": "^6.0.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "remotion": "^4.0.440",
+    "vite": "^8.0.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

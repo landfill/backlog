@@ -6,3 +6,10 @@ auto-operation/
 slack/
 tmp/
 .DS_Store
+node_modules/
+.agents/
+.claude/
+.agent
+.bkit/
+out/
+dist/

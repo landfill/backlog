@@ -1,0 +1,109 @@
+<!-- ───────────────────────────────────────────────
+     SECTION 03 — 컨텍스트 엔지니어링
+     03-a — 패러다임 전환
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 03 · 컨텍스트 엔지니어링</div>
+  <h2>패러다임 전환</h2>
+  <br>
+  <div class="paradigm-box">
+    <div>
+      <div class="paradigm-old">프롬프트 엔지니어링</div>
+      <div class="muted" style="font-size:0.8em;">어떻게 질문할까?</div>
+    </div>
+    <div class="paradigm-arrow">→</div>
+    <div>
+      <div class="paradigm-new">컨텍스트 엔지니어링</div>
+      <div class="accent" style="font-size:0.8em;">무엇을 어떻게 채워넣을까?</div>
+    </div>
+  </div>
+  <br>
+  <p style="font-size:0.88em; line-height:1.8;">
+    같은 AI에게 같은 일을 시켜도, <strong>무엇을 함께 전달하느냐</strong>에 따라 결과가 달라집니다.
+  </p>
+</section>
+
+<!-- ───────────────────────────────────────────────
+     03-b — 환불정책 Before/After 비교 (2열 레이아웃)
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 03 · 컨텍스트 엔지니어링</div>
+  <h2>전달 방식이 결과를 바꾼다</h2>
+  <br>
+  <div class="two-col">
+    <div class="col-card" style="border-left:3px solid var(--muted);">
+      <h4>프롬프트만</h4>
+      <p style="font-size:0.85em; color:var(--muted);">"환불 정책 만들어줘"</p>
+      <hr style="border-color:var(--border); margin:10px 0;">
+      <p style="font-size:0.85em;">→ 어디서든 쓸 수 있는<br><strong>일반 템플릿</strong></p>
+    </div>
+    <div class="col-card" style="border-left:3px solid var(--accent);">
+      <h4>컨텍스트 포함</h4>
+      <p style="font-size:0.78em; color:var(--text); line-height:1.6;">
+        "월 9,900원 구독형인데, 가입-환불 반복 악용이 30%야.
+        지난번에 7일 이내 전액 환불로 바꿨더니 1일 사용 후 환불 패턴이 늘었어.
+        그래서 결제 직후 24시간 이내만 허용하는 방향으로 판단했어."
+      </p>
+      <hr style="border-color:var(--border); margin:10px 0;">
+      <p style="font-size:0.85em;">→ <span class="accent"><strong>우리 상황에 맞는</strong></span> 정책안</p>
+    </div>
+  </div>
+  <p class="fragment muted" style="font-size:0.78em; margin-top:16px;">
+    단순 현황 정보가 아닙니다. 이전에 <strong>어떤 시도를 했고</strong>, <strong>어떤 결과가 있었고</strong>,
+    <strong>그래서 어떤 판단을 내렸는지</strong> — 이 맥락이 차이를 만듭니다.
+  </p>
+</section>
+
+<!-- ───────────────────────────────────────────────
+     03-c — 인용: "AI는 받은 맥락을 증폭하는 도구"
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 03 · 컨텍스트 엔지니어링</div>
+  <br><br>
+  <blockquote style="font-size:1.15em; line-height:1.9; padding:28px 32px;">
+    <strong class="accent">AI는 받은 맥락을 증폭하는 도구입니다.</strong><br>
+    <br>
+    좋은 맥락을 넣으면 좋은 결과가 나오고,<br>
+    잘못된 맥락을 넣으면 틀린 결과를 그럴듯하게 포장합니다.
+  </blockquote>
+  <br>
+  <blockquote class="fragment" style="font-size:0.88em; margin-top:16px;">
+    💡 AI에게 줄 모든 정보를 인쇄해서 <strong>옆 동료에게 건네보세요.</strong><br>
+    그 동료가 요청한 일을 못 하면, AI도 못 합니다.
+  </blockquote>
+</section>
+
+<!-- ───────────────────────────────────────────────
+     03-d — 컨텍스트 가득 찰 때 3가지 선택 표
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 03 · 컨텍스트 엔지니어링</div>
+  <h2>컨텍스트가 가득 찰 때 3가지 선택</h2>
+  <br>
+  <table>
+    <thead>
+      <tr><th>방법</th><th>행동</th><th>결과</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Clear</strong></td>
+        <td>새 대화창 열기</td>
+        <td>깨끗하게 리셋. 하지만 이전 맥락 <span class="highlight">전부 소멸</span></td>
+      </tr>
+      <tr>
+        <td><strong>Compact</strong></td>
+        <td>Claude Code <code>/compact</code></td>
+        <td>대화를 요약 압축. 핵심 맥락은 유지</td>
+      </tr>
+      <tr>
+        <td><strong>새 에이전트</strong></td>
+        <td>Cursor 새 Agent 창</td>
+        <td>깨끗하지만 역시 이전 기억 없음</td>
+      </tr>
+    </tbody>
+  </table>
+  <blockquote class="fragment" style="margin-top:20px; border-left-color:var(--highlight);">
+    ❗ 핵심 문제: 어떤 방식이든 새로 시작한 AI는 <span class="highlight"><strong>기억이 없습니다.</strong></span><br>
+    바이브코딩 세션에서 2시간 쌓아온 결정, 실패한 시도, 설계 이유가 전부 날아갑니다.
+  </blockquote>
+</section>

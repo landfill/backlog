@@ -1,0 +1,80 @@
+<!-- ───────────────────────────────────────────────
+     SECTION 05 — Cursor 실무 팁
+     05-a — @참조 3가지 표
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 05 · Cursor 실무 팁</div>
+  <h2>컨텍스트 채우는 방법</h2>
+  <br>
+  <table>
+    <thead>
+      <tr><th>명령</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>@Cursor Rules</code></td>
+        <td>매 대화에 <strong>자동 주입</strong>되는 상시 규칙. 프로젝트 규칙, 내 업무 방식을 여기에 정의</td>
+      </tr>
+      <tr>
+        <td><code>@Past Chats</code></td>
+        <td>이전 대화 참조. 맥락을 이어가고 싶을 때 <strong>과거 결정사항</strong> 불러오기</td>
+      </tr>
+      <tr>
+        <td><code>@파일</code> / <code>@폴더</code></td>
+        <td>내가 원하는 것만 <strong>골라서 주입</strong>. 불필요한 것은 넣지 않아야 컨텍스트 절약</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ───────────────────────────────────────────────
+     05-b — 새 에이전트 3가지 신호
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 05 · Cursor 실무 팁</div>
+  <h2>언제 새 에이전트를 열어야 하나</h2>
+  <br>
+  <table>
+    <thead>
+      <tr><th>신호</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="white-space:nowrap;">신호 1</td>
+        <td>Cursor 하단 컨텍스트 바 토큰 사용량이 <strong>절반을 넘었을 때</strong></td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap;">신호 2</td>
+        <td><strong>주제가 바뀔 때</strong> — 기능 A 완료 후 기능 B 시작, 문서 완성 후 다음 문서</td>
+      </tr>
+      <tr class="row-danger">
+        <td style="white-space:nowrap;"><span class="highlight"><strong>신호 3</strong></span></td>
+        <td>
+          <span class="highlight"><strong>AI가 같은 실수를 반복할 때</strong></span>
+          → 컨텍스트 오염 신호.<br>
+          더 대화해도 나아지지 않습니다
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ───────────────────────────────────────────────
+     05-c — _context/ 폴더 구조 코드블록
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 05 · Cursor 실무 팁</div>
+  <h2>비개발자를 위한 폴더 구조 팁</h2>
+  <p style="font-size:0.85em; line-height:1.7;">
+    <code>_context/</code> 폴더 하나를 프로젝트 안에 만드세요.<br>
+    회의록, 요구사항, 결정 로그를 텍스트 파일로 쌓아두면 <code>@폴더</code>로 통째로 주입할 수 있습니다.
+  </p>
+  <pre><code>_context/
+├── meeting_notes.md   # 회의에서 결정된 내용
+├── requirements.md    # 기능 요구사항, 제약 조건
+└── decision_log.md    # 왜 이렇게 결정했는지 이유</code></pre>
+  <blockquote style="margin-top:16px;">
+    새 에이전트가 시작되면 <code>@_context</code> 하나로<br>
+    모든 배경을 <span class="accent"><strong>즉시 주입</strong></span>할 수 있습니다.
+  </blockquote>
+</section>
