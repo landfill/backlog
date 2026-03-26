@@ -8,100 +8,91 @@ export const Slide02_FOMO: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const items = [
-    { icon: "😰", text: "ChatGPT / Claude 쓰다가 대화가 길어지면 갑자기 답변이 이상해졌다" },
-    { icon: "🤔", text: "아까 말한 내용을 AI가 또 물어봤다, 또는 처음 준 지시를 까먹었다" },
-    { icon: "🔁", text: "AI가 같은 실수를 조금씩 다른 방식으로 계속 반복했다" },
-  ];
+  const quoteP = spring({ frame: frame - 10, fps, config: { damping: 200 }, durationInFrames: 40 });
+  const msgP = spring({ frame: frame - 50, fps, config: { damping: 200 }, durationInFrames: 35 });
 
   return (
     <SlideBase sectionNumber="01" sectionTitle="오프닝">
       <AnimatedText delay={0}>
         <div
           style={{
-            fontSize: 60,
+            fontSize: 56,
             fontWeight: 900,
             color: COLORS.text,
-            marginBottom: 16,
+            marginBottom: 48,
             lineHeight: 1.2,
           }}
         >
-          혹시 이런 경험 있으신가요?
+          같이 달려봐야{" "}
+          <span
+            style={{
+              background: "linear-gradient(135deg, #6366F1, #22D3EE)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            비로소 보입니다
+          </span>
         </div>
       </AnimatedText>
 
-      <AnimatedText delay={10}>
-        <div
-          style={{
-            fontSize: 30,
-            color: COLORS.accentSecondary,
-            marginBottom: 64,
-            fontWeight: 500,
-          }}
-        >
-          손을 들어보세요 ✋
+      <div
+        style={{
+          opacity: interpolate(quoteP, [0, 1], [0, 1]),
+          transform: `translateY(${interpolate(quoteP, [0, 1], [30, 0])}px)`,
+          padding: "36px 48px",
+          background: "rgba(99,102,241,0.08)",
+          border: "1px solid rgba(99,102,241,0.25)",
+          borderRadius: 20,
+          borderLeft: "4px solid #6366F1",
+          marginBottom: 48,
+        }}
+      >
+        <div style={{ fontSize: 30, color: COLORS.textMuted, lineHeight: 1.8, fontStyle: "italic" }}>
+          "AI 시대에 나만 뒤처지는 것 같은 불안, 다들 느끼시죠.
+          <br />
+          근데 그 불안은 공부가 부족해서가 아닙니다.
+          <br />
+          밖에서 구경만 하고 있기 때문입니다.
+          <br />
+          <span style={{ color: COLORS.accentGlow, fontWeight: 600 }}>
+            같이 달려봐야 비로소 보이기 시작합니다."
+          </span>
         </div>
-      </AnimatedText>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-        {items.map((item, i) => {
-          const p = spring({
-            frame: frame - 20 - i * 15,
-            fps,
-            config: { damping: 200 },
-            durationInFrames: 30,
-          });
-
-          return (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 28,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 16,
-                padding: "28px 36px",
-                opacity: interpolate(p, [0, 1], [0, 1]),
-                transform: `translateX(${interpolate(p, [0, 1], [-40, 0])}px)`,
-              }}
-            >
-              <div style={{ fontSize: 48, flexShrink: 0 }}>{item.icon}</div>
-              <div
-                style={{
-                  fontSize: 28,
-                  color: COLORS.text,
-                  lineHeight: 1.5,
-                  fontWeight: 400,
-                }}
-              >
-                {item.text}
-              </div>
-            </div>
-          );
-        })}
       </div>
 
-      <AnimatedText delay={70}>
-        <div
-          style={{
-            marginTop: 48,
-            padding: "24px 36px",
-            background: "rgba(99,102,241,0.12)",
-            border: "1px solid rgba(99,102,241,0.3)",
-            borderRadius: 12,
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <div style={{ fontSize: 36 }}>💡</div>
-          <div style={{ fontSize: 28, color: COLORS.accentGlow, fontWeight: 500 }}>
-            이게 왜 일어나는지 아는 분? → 잠깐, 이유를 말하기 전에 데이터를 먼저 보겠습니다
-          </div>
+      <div
+        style={{
+          opacity: interpolate(msgP, [0, 1], [0, 1]),
+          transform: `translateY(${interpolate(msgP, [0, 1], [20, 0])}px)`,
+          padding: "32px 44px",
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 16,
+        }}
+      >
+        <div style={{ fontSize: 32, color: COLORS.text, lineHeight: 1.7, fontWeight: 500 }}>
+          AI를 잘 쓴다는 건 질문을 잘 하는 게 아닙니다.
+          <br />
+          <strong
+            style={{
+              background: "linear-gradient(135deg, #6366F1, #22D3EE)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              fontSize: 36,
+            }}
+          >
+            내 경험과 판단을 AI가 참고할 수 있는 형태로 전달하는 것
+          </strong>
+          입니다.
+          <br />
+          <span style={{ color: COLORS.textMuted, fontSize: 28 }}>
+            오늘은 그 전달 방법을 다룹니다.
+          </span>
         </div>
-      </AnimatedText>
+      </div>
     </SlideBase>
   );
 };

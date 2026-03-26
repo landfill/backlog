@@ -21,13 +21,12 @@ export const Slide06_ModelComparison: React.FC = () => {
         delay={15}
         headers={["도구 / 모델", "토큰", "한글 기준", "A4 환산"]}
         rows={[
-          ["ChatGPT 무료 (GPT-3.5)", "16K", "약 8천 자", "약 25페이지"],
-          ["ChatGPT Plus (GPT-4o)", "128K", "약 6.4만 자", "약 190페이지"],
-          ["Claude Pro (Sonnet 4.5)", "200K", "약 10만 자", "약 300페이지"],
-          ["GPT-5", "400K", "약 20만 자", "약 600페이지"],
+          ["ChatGPT (GPT-4o)", "128K", "약 6.4만 자", "약 190페이지"],
+          ["Cursor (Claude Sonnet 4.5)", "200K", "약 10만 자", "약 300페이지"],
+          ["GPT-5.4", "1,000K (1M)", "약 50만 자", "약 1,500페이지"],
           ["Gemini 2.5 Pro", "1,000K (1M)", "약 50만 자", "약 1,500페이지"],
         ]}
-        highlightRows={[2]}
+        highlightRows={[1]}
       />
 
       <AnimatedText delay={80}>

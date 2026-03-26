@@ -127,6 +127,51 @@ export const Slide12_CursorTips: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 하단: 폴더 구조 팁 */}
+      <AnimatedText delay={55}>
+        <div
+          style={{
+            marginTop: 28,
+            padding: "20px 28px",
+            background: "rgba(34,211,238,0.06)",
+            border: "1px solid rgba(34,211,238,0.2)",
+            borderRadius: 12,
+            display: "flex",
+            gap: 32,
+            alignItems: "center",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: COLORS.accentSecondary, marginBottom: 8 }}>
+              📁 비개발자를 위한 폴더 구조 팁
+            </div>
+            <div style={{ fontSize: 22, color: COLORS.textMuted, lineHeight: 1.6 }}>
+              <code style={{ color: COLORS.accentGlow, fontFamily: "'JetBrains Mono', monospace" }}>_context/</code> 폴더를 만들고 회의록·요구사항·결정 로그를 쌓으면
+              <br />
+              새 에이전트에 <code style={{ color: COLORS.warning, fontFamily: "'JetBrains Mono', monospace" }}>@_context</code> 하나로 모든 배경을 즉시 주입
+            </div>
+          </div>
+          <div
+            style={{
+              flexShrink: 0,
+              padding: "14px 20px",
+              background: "rgba(0,0,0,0.3)",
+              borderRadius: 10,
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 18,
+              color: COLORS.textMuted,
+              lineHeight: 1.8,
+              whiteSpace: "pre",
+            }}
+          >
+{`_context/
+├─ meeting_notes.md
+├─ requirements.md
+└─ decision_log.md`}
+          </div>
+        </div>
+      </AnimatedText>
     </SlideBase>
   );
 };

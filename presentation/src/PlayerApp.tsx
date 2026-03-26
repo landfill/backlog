@@ -40,21 +40,21 @@ const SLIDE_DURATIONS_SEC = [
 const SLIDE_DURATIONS = SLIDE_DURATIONS_SEC.map((s) => s * FPS);
 
 const SLIDES = [
-  { component: Slide01_Title,          label: "타이틀" },
-  { component: Slide02_FOMO,           label: "경험 공유" },
-  { component: Slide03_BCGResearch,    label: "BCG 연구" },
-  { component: Slide04_ContextWindow,  label: "컨텍스트 윈도우" },
-  { component: Slide05_WhatInContext,  label: "윈도우 구성" },
-  { component: Slide06_ModelComparison,label: "모델 비교" },
+  { component: Slide01_Title,           label: "타이틀" },
+  { component: Slide02_FOMO,            label: "오프닝" },
+  { component: Slide04_ContextWindow,   label: "컨텍스트 윈도우" },
+  { component: Slide05_WhatInContext,   label: "윈도우 구성" },
+  { component: Slide06_ModelComparison, label: "모델 비교" },
   { component: Slide07_OverflowSymptoms,label: "오버플로우 증상" },
-  { component: Slide08_Paradigm,       label: "패러다임 전환" },
-  { component: Slide09_ContextExample, label: "컨텍스트 예시" },
-  { component: Slide10_ContextReset,   label: "컨텍스트 리셋" },
-  { component: Slide11_Harness,        label: "하니스" },
-  { component: Slide12_CursorTips,     label: "Cursor 팁" },
-  { component: Slide13_SkillsForAll,   label: "비개발자 스킬" },
-  { component: Slide14_Demo,           label: "데모" },
-  { component: Slide15_Closing,        label: "클로징" },
+  { component: Slide08_Paradigm,        label: "패러다임 전환" },
+  { component: Slide09_ContextExample,  label: "컨텍스트 예시" },
+  { component: Slide10_ContextReset,    label: "컨텍스트 리셋" },
+  { component: Slide03_BCGResearch,     label: "하네스 소개" },
+  { component: Slide11_Harness,         label: "하네스 3요소" },
+  { component: Slide12_CursorTips,      label: "Cursor 팁" },
+  { component: Slide13_SkillsForAll,    label: "비개발자 스킬" },
+  { component: Slide14_Demo,            label: "데모" },
+  { component: Slide15_Closing,         label: "클로징" },
 ];
 
 const NUM_SLIDES = SLIDES.length;
