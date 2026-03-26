@@ -12,13 +12,13 @@
 }
 
 /* ── 전체 배경 ─────────────────────────────────── */
-body { background: var(--bg); font-family: 'Pretendard', sans-serif; }
-.reveal { background: var(--bg); color: var(--text); font-family: 'Pretendard', sans-serif; }
+body { background: var(--bg); font-family: 'Paperlogy', sans-serif; }
+.reveal { background: var(--bg); color: var(--text); font-family: 'Paperlogy', sans-serif; }
 .reveal .slides section { text-align: left; }
 
 /* ── 제목 계층 ─────────────────────────────────── */
 .reveal h1 {
-  font-family: 'Montserrat', 'Pretendard', sans-serif;
+  font-family: 'Paperlogy', sans-serif;
   font-size: 2.2em;
   color: var(--accent);
   font-weight: 700;
@@ -27,7 +27,7 @@ body { background: var(--bg); font-family: 'Pretendard', sans-serif; }
   letter-spacing: -0.01em;
 }
 .reveal h2 {
-  font-family: 'Montserrat', 'Pretendard', sans-serif;
+  font-family: 'Paperlogy', sans-serif;
   font-size: 1.5em;
   color: var(--text);
   font-weight: 700;

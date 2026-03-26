@@ -27,7 +27,7 @@ export const Slide15_Closing: React.FC = () => {
     <AbsoluteFill
       style={{
         background: "linear-gradient(160deg, #0A0E1A 0%, #0F172A 50%, #0A1628 100%)",
-        fontFamily: "'Noto Sans KR', sans-serif",
+        fontFamily: "'Paperlogy', sans-serif",
       }}
     >
       <div

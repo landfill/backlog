@@ -18,7 +18,7 @@ export const SlideBase: React.FC<Props> = ({ children, sectionNumber, sectionTit
     <AbsoluteFill
       style={{
         background: COLORS.gradientBg,
-        fontFamily: "'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif",
+        fontFamily: "'Paperlogy', sans-serif",
         opacity: bgOpacity,
       }}
     >

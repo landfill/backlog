@@ -63,7 +63,7 @@ export const Slide12_CursorTips: React.FC = () => {
                     transform: `translateX(${interpolate(p, [0, 1], [-30, 0])}px)`,
                   }}
                 >
-                  <code style={{ fontSize: 28, fontWeight: 800, color: item.color, display: "block", marginBottom: 8, fontFamily: "'JetBrains Mono', monospace" }}>
+                  <code style={{ fontSize: 28, fontWeight: 800, color: item.color, display: "block", marginBottom: 8, fontFamily: "'Paperlogy', monospace" }}>
                     {item.cmd}
                   </code>
                   <div style={{ fontSize: 22, color: COLORS.textMuted, lineHeight: 1.5 }}>{item.desc}</div>
@@ -147,9 +147,9 @@ export const Slide12_CursorTips: React.FC = () => {
               📁 비개발자를 위한 폴더 구조 팁
             </div>
             <div style={{ fontSize: 22, color: COLORS.textMuted, lineHeight: 1.6 }}>
-              <code style={{ color: COLORS.accentGlow, fontFamily: "'JetBrains Mono', monospace" }}>_context/</code> 폴더를 만들고 회의록·요구사항·결정 로그를 쌓으면
+              <code style={{ color: COLORS.accentGlow, fontFamily: "'Paperlogy', monospace" }}>_context/</code> 폴더를 만들고 회의록·요구사항·결정 로그를 쌓으면
               <br />
-              새 에이전트에 <code style={{ color: COLORS.warning, fontFamily: "'JetBrains Mono', monospace" }}>@_context</code> 하나로 모든 배경을 즉시 주입
+              새 에이전트에 <code style={{ color: COLORS.warning, fontFamily: "'Paperlogy', monospace" }}>@_context</code> 하나로 모든 배경을 즉시 주입
             </div>
           </div>
           <div
@@ -158,7 +158,7 @@ export const Slide12_CursorTips: React.FC = () => {
               padding: "14px 20px",
               background: "rgba(0,0,0,0.3)",
               borderRadius: 10,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'Paperlogy', monospace",
               fontSize: 18,
               color: COLORS.textMuted,
               lineHeight: 1.8,

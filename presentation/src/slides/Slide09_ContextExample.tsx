@@ -57,7 +57,7 @@ export const Slide09_ContextExample: React.FC = () => {
                 color: COLORS.text,
                 fontWeight: 600,
                 marginBottom: 20,
-                fontFamily: "monospace",
+                fontFamily: "'Paperlogy', monospace",
                 background: "rgba(0,0,0,0.3)",
                 padding: "12px 16px",
                 borderRadius: 8,

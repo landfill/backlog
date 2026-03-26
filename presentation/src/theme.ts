@@ -19,9 +19,9 @@ export const COLORS = {
 };
 
 export const FONTS = {
-  heading: "'Pretendard', 'Noto Sans KR', sans-serif",
-  body: "'Pretendard', 'Noto Sans KR', sans-serif",
-  mono: "'JetBrains Mono', 'Fira Code', monospace",
+  heading: "'Paperlogy', sans-serif",
+  body: "'Paperlogy', sans-serif",
+  mono: "'Paperlogy', monospace",
 };
 
 export const SLIDE = {

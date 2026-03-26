@@ -185,7 +185,7 @@ export const PlayerApp: React.FC = () => {
               padding: "12px 28px",
               color: "rgba(255,255,255,0.7)",
               fontSize: 16,
-              fontFamily: "'Noto Sans KR', sans-serif",
+              fontFamily: "'Paperlogy', sans-serif",
               animation: "pulse 1.5s ease infinite",
             }}
           >
@@ -242,7 +242,7 @@ export const PlayerApp: React.FC = () => {
           right: 22,
           color: "rgba(255,255,255,0.35)",
           fontSize: 13,
-          fontFamily: "'Noto Sans KR', sans-serif",
+          fontFamily: "'Paperlogy', sans-serif",
           pointerEvents: "none",
           zIndex: 100,
         }}
