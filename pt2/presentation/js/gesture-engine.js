@@ -1,9 +1,10 @@
 /**
- * GestureEngine — 단순화된 3가지 제스처
+ * GestureEngine — 4가지 제스처
  *
- *  ✌️ V사인 (검지+중지)  0.6초 유지 → 줌인 (+0.5x)
- *  ☝️ 검지 1개          0.6초 유지 → 줌아웃 (-0.5x, 최소 1.0x)
- *  🖐→✊ 손 펼침→주먹    전환 순간  → 슬라이드 다음
+ *  ✌️ V사인 (검지+중지)  0.6초 유지 → 줌인 (2x)
+ *  ☝️ 검지 1개          0.6초 유지 → 줌아웃 (1x)
+ *  🖐→✊ 손 펼침→주먹    전환 순간  → 다음 슬라이드
+ *  👍 엄지 올림/옆       0.6초 유지 → 이전 슬라이드
  */
 class GestureEngine {
   #hands  = null
@@ -18,19 +19,23 @@ class GestureEngine {
   ZOOM_OUT = 1.0   // 검지  → 원래 크기
 
   // 제스처 dwell
-  #holdGesture = null   // 'v-sign' | 'index-only' | null
+  #holdGesture = null   // 'v-sign' | 'index-only' | 'thumb-up' | null
   #holdStart   = 0
-  DWELL_MS     = 600
+  DWELL_MS       = 600
+  THUMB_DWELL_MS = 200
 
   // 슬라이드 전환 (open→fist 트랜지션)
-  #wasOpen           = false // 이전 프레임에서 손바닥이 열려 있었는지
-  #lastOpenAt        = 0     // 마지막으로 손바닥이 열렸던 시각
-  OPEN_WINDOW_MS     = 1000  // 이 시간 내 열렸다가 주먹 → 전환 인정
-  #lastActionAt      = 0
-  ACTION_COOLDOWN_MS = 1200
+  #wasOpen           = false
+  #lastOpenAt        = 0
+  OPEN_WINDOW_MS     = 1000
+  #lastNextAt        = 0
+  #lastPrevAt        = 0
+  NEXT_COOLDOWN_MS   = 1200
+  PREV_COOLDOWN_MS   = 600
 
   // 콜백
   onNextSlide    = null   // () => void
+  onPrevSlide    = null   // () => void
   onViewChange   = null   // (zoom) => void
   onGestureStatus = null  // (text) => void
 
@@ -98,10 +103,11 @@ class GestureEngine {
     }
 
     const lm     = results.multiHandLandmarks[0]
-    const isV    = this.#isVSign(lm)
-    const isIdx  = this.#isIndexOnly(lm)
-    const isOpen = this.#isOpenPalm(lm)
-    const isFist = this.#isFist(lm)
+    const isV     = this.#isVSign(lm)
+    const isIdx   = this.#isIndexOnly(lm)
+    const isThumb = this.#isThumbUp(lm)
+    const isOpen  = this.#isOpenPalm(lm)
+    const isFist  = this.#isFist(lm)
 
     this.#drawLandmarks(results)
 
@@ -112,37 +118,49 @@ class GestureEngine {
 
     const recentlyOpen = (Date.now() - this.#lastOpenAt) < this.OPEN_WINDOW_MS
 
-    if (isFist && recentlyOpen && !this.#isCooldown()) {
+    if (isFist && recentlyOpen && !this.#isNextCooldown()) {
       console.log('[Gesture] ✊ 클릭 → 다음 슬라이드')
-      this.#lastActionAt = Date.now()
-      this.#lastOpenAt   = 0   // 연속 트리거 방지
-      this.#holdGesture  = null
+      this.#lastNextAt  = Date.now()
+      this.#lastOpenAt  = 0
+      this.#holdGesture = null
       this.#updateStatus('✊ 다음 슬라이드')
       this.#flashReveal('gesture-next')
       this.onNextSlide?.()
     }
 
-    // ── 2. 줌 제스처 dwell ────────────────────────────
+    // ── 2. 엄지 → 이전 슬라이드 (dwell) ──────────────
+    // ── 3. 줌 제스처 dwell ────────────────────────────
     const now     = Date.now()
-    const gesture = isV ? 'v-sign' : isIdx ? 'index-only' : null
+    const gesture = (isThumb && !isFist) ? 'thumb-up' : isV ? 'v-sign' : isIdx ? 'index-only' : null
 
     if (gesture) {
       if (gesture !== this.#holdGesture) {
-        // 새 제스처 감지 → 타이머 시작
         this.#holdGesture = gesture
         this.#holdStart   = now
-        const hint = isV ? '✌️ V사인 → 줌인' : '☝️ 검지 → 줌아웃'
+        const hint = isThumb ? '👍 엄지 → 이전 슬라이드'
+                   : isV     ? '✌️ V사인 → 줌인'
+                   :           '☝️ 검지 → 줌아웃'
         this.#updateStatus(`${hint} (유지 중...)`)
-      } else if (now - this.#holdStart >= this.DWELL_MS) {
-        // dwell 완료 → 줌 변경
-        const newZoom = isV ? this.ZOOM_IN : this.ZOOM_OUT
-        if (newZoom !== this.#zoom) {
-          this.#zoom = newZoom
-          console.log(`[Gesture] 줌 → ${this.#zoom}x`)
-          this.#updateStatus(isV ? '🔍 줌 2x' : '🔍 원래 크기')
-          this.onViewChange?.(this.#zoom)
+      } else if (now - this.#holdStart >= (isThumb ? this.THUMB_DWELL_MS : this.DWELL_MS)) {
+        if (isThumb) {
+          if (!this.#isPrevCooldown()) {
+            console.log('[Gesture] 👍 엄지 → 이전 슬라이드')
+            this.#lastPrevAt = Date.now()
+            this.#updateStatus('👍 이전 슬라이드')
+            this.#flashReveal('gesture-prev')
+            this.onPrevSlide?.()
+          }
+          this.#holdStart = now + 99999
+        } else {
+          const newZoom = isV ? this.ZOOM_IN : this.ZOOM_OUT
+          if (newZoom !== this.#zoom) {
+            this.#zoom = newZoom
+            console.log(`[Gesture] 줌 → ${this.#zoom}x`)
+            this.#updateStatus(isV ? '🔍 줌 2x' : '🔍 원래 크기')
+            this.onViewChange?.(this.#zoom)
+          }
+          this.#holdStart = now + 99999
         }
-        this.#holdStart = now + 99999  // 연속 실행 방지
       }
     } else {
       this.#holdGesture = null
@@ -182,9 +200,36 @@ class GestureEngine {
     return tips.every((t, i) => lm[t].y > lm[pips[i]].y)
   }
 
+  /**
+   * 엄지 올림/옆: 엄지만 펴고(tip이 IP보다 멀리) 나머지 4개 닫힘
+   * - 세로(thumbs-up): thumb tip이 IP보다 위 (y 작음)
+   * - 가로(옆으로):    thumb tip이 IP보다 x축으로 멀리
+   * 두 경우 모두 인정
+   */
+  #isThumbUp(lm) {
+    const fingersClosed =
+         lm[8].y  > lm[6].y    // 검지 닫힘
+      && lm[12].y > lm[10].y   // 중지 닫힘
+      && lm[16].y > lm[14].y   // 약지 닫힘
+      && lm[20].y > lm[18].y   // 새끼 닫힘
+
+    if (!fingersClosed) return false
+
+    const thumbTip = lm[4]
+    const thumbIP  = lm[3]
+    const wrist    = lm[0]
+
+    const thumbUp   = thumbTip.y < thumbIP.y - 0.04
+    const thumbSide = Math.abs(thumbTip.x - thumbIP.x) > 0.06
+                   && Math.abs(thumbTip.x - wrist.x)   > Math.abs(thumbIP.x - wrist.x)
+
+    return thumbUp || thumbSide
+  }
+
   // ── 유틸 ─────────────────────────────────────────
 
-  #isCooldown()       { return Date.now() - this.#lastActionAt < this.ACTION_COOLDOWN_MS }
+  #isNextCooldown()   { return Date.now() - this.#lastNextAt < this.NEXT_COOLDOWN_MS }
+  #isPrevCooldown()   { return Date.now() - this.#lastPrevAt < this.PREV_COOLDOWN_MS }
   #updateStatus(text) { this.onGestureStatus?.(text) }
 
   #flashReveal(cls) {

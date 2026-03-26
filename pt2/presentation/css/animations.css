@@ -1,73 +1,55 @@
-/* ── 슬라이드 인 — 오른쪽에서 ─────────────────── */
-@keyframes slideInRight {
-  from { transform: translateX(60px); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
-}
+/* ══════════════════════════════════════════════════
+   Remotion spring(damping:200) → CSS 키프레임
+   ══════════════════════════════════════════════════ */
 
-/* ── 프래그먼트: 아래에서 올라옴 ────────────────── */
-.reveal .fragment.slide-up {
-  transition: transform 0.5s ease, opacity 0.5s ease;
-}
-.reveal .fragment.slide-up.visible {
-  transform: translateY(0);
-  opacity: 1;
-}
-.reveal .fragment.slide-up:not(.visible) {
-  transform: translateY(20px);
-  opacity: 0;
-}
+@keyframes aUp    { from { opacity:0; transform:translateY(30px); }  to { opacity:1; transform:translateY(0); } }
+@keyframes aLeft  { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
+@keyframes aRight { from { opacity:0; transform:translateX(40px); }  to { opacity:1; transform:translateX(0); } }
+@keyframes aFade  { from { opacity:0; } to { opacity:1; } }
+@keyframes aScale { from { opacity:0; transform:scale(0.8); }       to { opacity:1; transform:scale(1); } }
+@keyframes aDown  { from { opacity:0; transform:translateY(-30px); } to { opacity:1; transform:translateY(0); } }
 
-/* ── 숫자 카운트업 효과 (JS 연동) ─────────────── */
-.count-up { transition: color 0.3s ease; }
-.count-up.active { color: var(--highlight); }
+/* 초기 숨김 */
+.a { opacity: 0; }
 
-/* ── 제스처 피드백 애니메이션 ─────────────────── */
+/* present 슬라이드에서 실행 */
+.reveal .slides section.present .a {
+  animation-duration: 0.85s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  animation-delay: var(--d, 0s);
+}
+.reveal .slides section.present .a-up    { animation-name: aUp; }
+.reveal .slides section.present .a-left  { animation-name: aLeft; }
+.reveal .slides section.present .a-right { animation-name: aRight; }
+.reveal .slides section.present .a-fade  { animation-name: aFade; }
+.reveal .slides section.present .a-scale { animation-name: aScale; }
+.reveal .slides section.present .a-down  { animation-name: aDown; }
+
+/* ── 제스처 피드백 (보존) ─────────────────────── */
 @keyframes gestureFlash {
   0%   { box-shadow: none; }
-  30%  { box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.4); }
+  30%  { box-shadow: 0 0 0 4px rgba(99,102,241,0.4); }
   100% { box-shadow: none; }
 }
-
 .reveal.gesture-next .slides,
-.reveal.gesture-prev .slides {
-  animation: gestureFlash 0.6s ease;
-}
+.reveal.gesture-prev .slides { animation: gestureFlash 0.6s ease; }
 
-/* ── 페이드인 애니메이션 ────────────────────────── */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.reveal .slides section.present {
-  animation: fadeIn 0.4s ease;
-}
-
-/* ── 줌 인디케이터 ──────────────────────────────── */
+/* ── 줌 인디케이터 (보존) ─────────────────────── */
 @keyframes zoomPulse {
-  0%   { opacity: 0; transform: scale(0.8); }
-  30%  { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.8); }
+  0%   { opacity:0; transform:translate(-50%,-50%) scale(0.8); }
+  30%  { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(0.8); }
 }
 #zoom-indicator {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(88, 166, 255, 0.2);
-  border: 2px solid rgba(88, 166, 255, 0.6);
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8em;
-  color: var(--accent);
-  pointer-events: none;
-  opacity: 0;
-  z-index: 999;
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(99,102,241,0.2);
+  border:2px solid rgba(99,102,241,0.6);
+  border-radius:50%;
+  width:80px; height:80px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:#818CF8;
+  pointer-events:none; opacity:0; z-index:999;
 }
-#zoom-indicator.active {
-  animation: zoomPulse 0.8s ease forwards;
-}
+#zoom-indicator.active { animation: zoomPulse 0.8s ease forwards; }

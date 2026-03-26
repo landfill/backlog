@@ -1,272 +1,134 @@
-/* ── 컬러 팔레트 ───────────────────────────────── */
-:root {
-  --bg:        #0d1117;
-  --surface:   #161b22;
-  --border:    #30363d;
-  --text:      #e6edf3;
-  --muted:     #8b949e;
-  --accent:    #58a6ff;
-  --highlight: #f78166;
-  --success:   #3fb950;
-  --warning:   #d29922;
-}
+/* ══════════════════════════════════════════════════
+   Remotion theme.ts 1:1 매핑 — 1920×1080 기준
+   ══════════════════════════════════════════════════ */
 
-/* ── 전체 배경 ─────────────────────────────────── */
-body { background: var(--bg); font-family: 'Paperlogy', sans-serif; }
-.reveal { background: var(--bg); color: var(--text); font-family: 'Paperlogy', sans-serif; }
-.reveal .slides section { text-align: left; }
-
-/* ── 제목 계층 ─────────────────────────────────── */
-.reveal h1 {
+/* ── Reveal.js 완전 리셋 ─────────────────────── */
+html, body { margin: 0; padding: 0; background: #0A0E1A; overflow: hidden; }
+.reveal { background: #0A0E1A; font-family: 'Paperlogy', sans-serif; color: #F1F5F9; }
+.reveal .slides { background: #0A0E1A; }
+.reveal .slide-background { background: #0A0E1A !important; }
+.reveal .slides section { text-align: left; box-sizing: border-box; }
+.reveal h1, .reveal h2, .reveal h3, .reveal h4,
+.reveal p, .reveal ul, .reveal ol, .reveal li,
+.reveal table, .reveal blockquote, .reveal pre, .reveal code {
+  margin: 0; padding: 0; text-transform: none; text-shadow: none;
   font-family: 'Paperlogy', sans-serif;
-  font-size: 2.2em;
-  color: var(--accent);
-  font-weight: 700;
-  line-height: 1.2;
-  text-transform: none;
-  letter-spacing: -0.01em;
+  letter-spacing: normal; word-spacing: normal;
 }
-.reveal h2 {
-  font-family: 'Paperlogy', sans-serif;
-  font-size: 1.5em;
-  color: var(--text);
-  font-weight: 700;
-  text-transform: none;
-}
-.reveal h3 {
-  font-size: 1.0em;
-  color: var(--muted);
-  font-weight: 600;
-  text-transform: none;
+.reveal a { color: #818CF8; text-decoration: none; }
+
+/* ── SlideBase 공통 ──────────────────────────── */
+/* position은 Reveal.js가 absolute로 설정 → 건드리지 않음 */
+.reveal .slides section {
+  background: linear-gradient(160deg, #0A0E1A 0%, #0F172A 50%, #0A1628 100%);
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
 }
 
-/* ── 섹션 번호 배지 ─────────────────────────────── */
-.slide-badge {
-  display: inline-block;
-  background: var(--accent);
-  color: #0d1117;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 0.65em;
-  font-weight: 700;
-  margin-bottom: 12px;
+/* 글로우 원 — z-index:-1 → 배경 위, 콘텐츠 아래 */
+.reveal .slides section::before {
+  content: '';
+  position: absolute;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+  pointer-events: none; z-index: -1;
+}
+.reveal .slides section::after {
+  content: '';
+  position: absolute;
+  bottom: -150px; left: -150px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 70%);
+  pointer-events: none; z-index: -1;
+}
+
+/* ── 콘텐츠 래퍼 ─────────────────────────────── */
+.slide-body {
+  position: absolute; inset: 0;
+  padding: 100px 80px 80px;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  z-index: 1;
+}
+.slide-body.no-badge {
+  padding-top: 60px;
+}
+
+/* ── 섹션 뱃지 ──────────────────────────────── */
+.section-badge {
+  position: absolute; top: 40px; left: 80px;
+  display: flex; align-items: center; gap: 12px; z-index: 2;
+}
+.badge-num {
+  background: rgba(99,102,241,0.2);
+  border: 1px solid rgba(99,102,241,0.4);
+  border-radius: 8px;
+  padding: 6px 16px;
+  color: #818CF8;
+  font-size: 22px; font-weight: 600;
   letter-spacing: 0.05em;
 }
-
-/* ── 핵심 인용구 ─────────────────────────────────── */
-.reveal blockquote {
-  background: var(--surface);
-  border-left: 4px solid var(--accent);
-  padding: 16px 20px;
-  border-radius: 0 8px 8px 0;
-  font-style: normal;
-  font-size: 0.9em;
-  color: var(--text);
-  width: 100%;
-  margin: 0;
-  box-sizing: border-box;
+.badge-title {
+  color: #64748B;
+  font-size: 22px; font-weight: 400;
 }
 
-/* ── 데이터 테이블 ─────────────────────────────── */
+/* ── 하단 그라디언트 라인 ─────────────────────── */
+.bottom-line {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #6366F1 30%, #22D3EE 70%, transparent 100%);
+  opacity: 0.6; z-index: 2;
+}
+
+/* ── 그라데이션 텍스트 ────────────────────────── */
+.grad { background: linear-gradient(135deg, #6366F1 0%, #22D3EE 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.grad-white { background: linear-gradient(135deg, #F1F5F9 0%, #CBD5E1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.grad-cyan { background: linear-gradient(135deg, #22D3EE 0%, #34D399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* ── 테이블 ─────────────────────────────────── */
 .reveal table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 0.82em;
+  width: 100%; border-collapse: collapse;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(99,102,241,0.25);
 }
 .reveal table th {
-  background: var(--surface);
-  color: var(--accent);
-  padding: 10px 16px;
-  border-bottom: 2px solid var(--border);
-  font-weight: 600;
-  text-align: left;
+  background: rgba(99,102,241,0.15);
+  color: #818CF8; font-size: 24px; font-weight: 700;
+  padding: 20px 24px; text-align: left;
+  border-bottom: 1px solid rgba(99,102,241,0.25);
+  border-right: 1px solid rgba(99,102,241,0.25);
 }
+.reveal table th:last-child { border-right: none; }
 .reveal table td {
-  padding: 9px 16px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  vertical-align: top;
+  font-size: 22px; color: #F1F5F9; font-weight: 400;
+  padding: 18px 24px; line-height: 1.5;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid rgba(255,255,255,0.05);
 }
-.reveal table tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.03);
-}
-.reveal table tr:hover td {
-  background: rgba(88, 166, 255, 0.05);
-}
+.reveal table td:last-child { border-right: none; }
+.reveal table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.reveal table tr.hl td { background: rgba(99,102,241,0.12); }
+.reveal table td.accent { color: #818CF8; font-weight: 700; }
 
-/* ── 강조 텍스트 ─────────────────────────────────── */
-.highlight { color: var(--highlight); font-weight: 700; }
-.accent    { color: var(--accent);    font-weight: 700; }
-.success   { color: var(--success);   font-weight: 700; }
-.warning   { color: var(--warning);   font-weight: 700; }
-.muted     { color: var(--muted); }
-
-/* ── 코드 블록 ─────────────────────────────────── */
-.reveal pre {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  font-size: 0.75em;
-  line-height: 1.6;
-  width: 100%;
-  box-sizing: border-box;
-}
-.reveal code {
-  background: var(--surface);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 0.9em;
-  color: var(--highlight);
-}
-.reveal pre code {
-  background: none;
-  padding: 0;
-  color: var(--text);
-}
-
-/* ── 리스트 ─────────────────────────────────────── */
-.reveal ul, .reveal ol {
-  margin-left: 1.2em;
-  font-size: 0.88em;
-}
-.reveal li {
-  margin-bottom: 0.5em;
-  line-height: 1.6;
-}
-
-/* ── 2열 레이아웃 ────────────────────────────────── */
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  width: 100%;
-}
-.col-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-}
-.col-card h4 {
-  color: var(--accent);
-  font-size: 0.85em;
-  font-weight: 600;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── 웹캠 오버레이 UI ─────────────────────────── */
+/* ── 웹캠 UI (제스처 — 보존) ─────────────────── */
 #gesture-ui {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 160px;
-  z-index: 1000;
-  border-radius: 8px;
-  overflow: hidden;
-  opacity: 0.85;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  position: fixed; bottom: 20px; right: 20px;
+  width: 160px; z-index: 1000;
+  border-radius: 8px; overflow: hidden; opacity: 0.85;
+  background: #111827;
+  border: 1px solid rgba(99,102,241,0.25);
 }
-#webcam {
-  width: 160px;
-  height: 120px;
-  object-fit: cover;
-  display: block;
-  transform: scaleX(-1);
-}
-#landmark-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 160px;
-  height: 120px;
-  transform: scaleX(-1);
-}
+#webcam { width: 160px; height: 120px; object-fit: cover; display: block; transform: scaleX(-1); }
+#landmark-canvas { position: absolute; top: 0; left: 0; width: 160px; height: 120px; transform: scaleX(-1); }
 #gesture-status {
-  background: rgba(13, 17, 23, 0.85);
-  color: var(--text);
-  font-size: 11px;
-  padding: 4px 8px;
-  text-align: center;
-  border-top: 1px solid var(--border);
-}
-
-/* ── 큰 인용 타이포 (클로징용) ─────────────────── */
-.closing-quote {
-  font-size: 1.3em;
-  line-height: 1.8;
-  color: var(--text);
-  text-align: center;
-  padding: 20px;
-}
-.closing-quote em {
-  color: var(--accent);
-  font-style: normal;
-  font-weight: 700;
-}
-
-/* ── 번호 배지 리스트 ─────────────────────────── */
-.numbered-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.numbered-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
-  font-size: 0.82em;
-}
-.num-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  background: var(--accent);
-  color: #0d1117;
-  border-radius: 50%;
-  font-size: 0.75em;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* ── 행 강조 ─────────────────────────────────── */
-.reveal table tr.row-highlight td {
-  background: rgba(88, 166, 255, 0.12);
-  color: var(--accent);
-  font-weight: 600;
-}
-.reveal table tr.row-danger td {
-  background: rgba(247, 129, 102, 0.08);
-}
-
-/* ── 패러다임 전환 박스 ───────────────────────── */
-.paradigm-box {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px 24px;
-  font-size: 0.9em;
-}
-.paradigm-old {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-.paradigm-arrow {
-  color: var(--accent);
-  font-size: 1.4em;
-  flex-shrink: 0;
-}
-.paradigm-new {
-  color: var(--accent);
-  font-weight: 700;
+  background: rgba(10,14,26,0.85); color: #F1F5F9;
+  font-size: 11px; padding: 4px 8px; text-align: center;
+  border-top: 1px solid rgba(99,102,241,0.25);
 }

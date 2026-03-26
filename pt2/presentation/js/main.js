@@ -3,14 +3,22 @@
  */
 
 const SLIDE_FILES = [
-  'slides/01-opening.html',
-  'slides/02-context-window.html',
-  'slides/03-context-engineering.html',
-  'slides/04-harness.html',
-  'slides/05-cursor-tips.html',
-  'slides/06-non-dev-cases.html',
-  'slides/07-demo.html',
-  'slides/08-closing.html'
+  'slides/01-title.html',
+  'slides/02-fomo.html',
+  'slides/03-context-window.html',
+  'slides/04-what-in-context.html',
+  'slides/05-context-growth.html',
+  'slides/06-model-comparison.html',
+  'slides/07-overflow-symptoms.html',
+  'slides/08-paradigm.html',
+  'slides/09-context-example.html',
+  'slides/10-cursor-tips.html',
+  'slides/11-context-reset.html',
+  'slides/12-skills-for-all.html',
+  'slides/13-demo.html',
+  'slides/14-bcg-research.html',
+  'slides/15-harness.html',
+  'slides/16-closing.html',
 ]
 
 // ── 슬라이드 HTML 동적 로드 ────────────────────────
@@ -36,14 +44,14 @@ async function initReveal() {
     controls: true,
     progress: true,
     slideNumber: 'c/t',
-    transition: 'slide',
+    transition: 'fade',
     backgroundTransition: 'fade',
     autoAnimateEasing: 'ease',
     autoAnimateDuration: 0.6,
-    center: true,
-    width: 1100,
-    height: 700,
-    margin: 0.04,
+    center: false,
+    width: 1920,
+    height: 1080,
+    margin: 0.02,
   })
   console.log('[Reveal] 초기화 완료, 슬라이드 수:', Reveal.getTotalSlides())
 }
@@ -62,6 +70,11 @@ function initGesture() {
   engine.onNextSlide = () => {
     console.log('[main] Reveal.next() 호출')
     Reveal.next()
+  }
+
+  engine.onPrevSlide = () => {
+    console.log('[main] Reveal.prev() 호출')
+    Reveal.prev()
   }
 
   engine.onViewChange = (zoom) => {
