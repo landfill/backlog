@@ -12,6 +12,7 @@ import { Slide08_Paradigm } from "./slides/Slide08_Paradigm";
 import { Slide09_ContextExample } from "./slides/Slide09_ContextExample";
 import { Slide10_ContextReset } from "./slides/Slide10_ContextReset";
 import { Slide11_Harness } from "./slides/Slide11_Harness";
+import { Slide_ContextGrowth } from "./slides/Slide_ContextGrowth";
 import { Slide12_CursorTips } from "./slides/Slide12_CursorTips";
 import { Slide13_SkillsForAll } from "./slides/Slide13_SkillsForAll";
 import { Slide14_Demo } from "./slides/Slide14_Demo";
@@ -25,6 +26,7 @@ const SLIDE_DURATIONS_SEC = [
   10, // 03 BCG 연구
   10, // 04 컨텍스트 윈도우
   9,  // 05 윈도우 구성요소
+  10, // 컨텍스트 윈도우 성장 시각화
   10, // 06 모델 비교
   9,  // 07 오버플로우 증상
   9,  // 08 패러다임
@@ -44,6 +46,7 @@ const SLIDES = [
   { component: Slide02_FOMO,            label: "오프닝" },
   { component: Slide04_ContextWindow,   label: "컨텍스트 윈도우" },
   { component: Slide05_WhatInContext,   label: "윈도우 구성" },
+  { component: Slide_ContextGrowth,    label: "컨텍스트 성장" },
   { component: Slide06_ModelComparison, label: "모델 비교" },
   { component: Slide07_OverflowSymptoms,label: "오버플로우 증상" },
   { component: Slide08_Paradigm,        label: "패러다임 전환" },

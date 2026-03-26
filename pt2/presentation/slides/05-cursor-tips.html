@@ -1,5 +1,90 @@
 <!-- ───────────────────────────────────────────────
      SECTION 05 — Cursor 실무 팁
+     05-ctx — 컨텍스트 윈도우 성장 시각화
+─────────────────────────────────────────────── -->
+<section data-auto-animate>
+  <div class="slide-badge">SECTION 05 · Cursor 실무 팁</div>
+  <h2>대화할수록 컨텍스트가 쌓입니다</h2>
+
+  <div style="position:relative; display:flex; align-items:flex-start; gap:6px; margin-top:16px; height:310px;">
+    <!-- 0 tokens -->
+    <div style="position:absolute; top:-14px; left:0; font-size:0.55em; color:var(--muted);">0 tokens ─ ─ ─ ─ ─</div>
+
+    <!-- Turn 1 -->
+    <div class="fragment" data-fragment-index="1" style="flex:1;">
+      <div style="text-align:center; font-size:0.78em; font-weight:700; color:var(--text); margin-bottom:6px;">Turn 1</div>
+      <div style="background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.25); border-radius:6px; padding:8px; margin-bottom:4px;">
+        <div style="font-size:0.52em; font-weight:700; color:var(--accent); margin-bottom:4px;">INPUT</div>
+        <div style="background:rgba(88,166,255,0.08); border-radius:4px; padding:10px; font-size:0.65em; color:var(--text);">User message</div>
+      </div>
+      <div style="background:rgba(139,148,158,0.12); border:1px solid rgba(139,148,158,0.3); border-radius:6px; padding:8px;">
+        <div style="font-size:0.52em; font-weight:700; color:var(--muted); margin-bottom:4px;">OUTPUT</div>
+        <div style="background:rgba(139,148,158,0.08); border-radius:4px; padding:10px; font-size:0.65em; color:var(--text);">Text response</div>
+      </div>
+    </div>
+
+    <!-- Arrow 1→2 -->
+    <div class="fragment" data-fragment-index="2" style="align-self:center; color:var(--border); padding-top:24px;">▸</div>
+
+    <!-- Turn 2 -->
+    <div class="fragment" data-fragment-index="2" style="flex:1;">
+      <div style="text-align:center; font-size:0.78em; font-weight:700; color:var(--text); margin-bottom:6px;">Turn 2</div>
+      <div style="background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.25); border-radius:6px; padding:8px; margin-bottom:4px;">
+        <div style="font-size:0.52em; font-weight:700; color:var(--accent); margin-bottom:4px;">INPUT</div>
+        <div style="display:flex; flex-direction:column; gap:3px;">
+          <div style="background:rgba(88,166,255,0.08); border-radius:3px; padding:6px 8px; font-size:0.6em; color:var(--text);">User message</div>
+          <div style="background:rgba(139,148,158,0.08); border-radius:3px; padding:6px 8px; font-size:0.6em; color:var(--text);">Text response</div>
+          <div style="background:rgba(88,166,255,0.08); border-radius:3px; padding:6px 8px; font-size:0.6em; color:var(--text);">User message</div>
+        </div>
+      </div>
+      <div style="background:rgba(139,148,158,0.12); border:1px solid rgba(139,148,158,0.3); border-radius:6px; padding:8px;">
+        <div style="font-size:0.52em; font-weight:700; color:var(--muted); margin-bottom:4px;">OUTPUT</div>
+        <div style="background:rgba(139,148,158,0.08); border-radius:4px; padding:8px; font-size:0.65em; color:var(--text);">Text response</div>
+      </div>
+    </div>
+
+    <!-- Arrow 2→3 -->
+    <div class="fragment" data-fragment-index="3" style="align-self:center; color:var(--border); padding-top:24px;">▸</div>
+
+    <!-- Turn 3 -->
+    <div class="fragment" data-fragment-index="3" style="flex:1;">
+      <div style="text-align:center; font-size:0.78em; font-weight:700; color:var(--text); margin-bottom:6px;">Turn 3</div>
+      <div style="background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.25); border-radius:6px; padding:8px; margin-bottom:4px;">
+        <div style="font-size:0.52em; font-weight:700; color:var(--accent); margin-bottom:4px;">INPUT</div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="background:rgba(88,166,255,0.06); border-radius:3px; padding:4px 8px; font-size:0.55em; color:var(--text);">User message</div>
+          <div style="background:rgba(139,148,158,0.06); border-radius:3px; padding:4px 8px; font-size:0.55em; color:var(--text);">Text response</div>
+          <div style="background:rgba(88,166,255,0.06); border-radius:3px; padding:4px 8px; font-size:0.55em; color:var(--text);">User message</div>
+          <div style="background:rgba(139,148,158,0.06); border-radius:3px; padding:4px 8px; font-size:0.55em; color:var(--text);">Text response</div>
+          <div style="background:rgba(88,166,255,0.06); border-radius:3px; padding:4px 8px; font-size:0.55em; color:var(--text);">User message</div>
+        </div>
+      </div>
+      <div style="background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); border-radius:6px; padding:8px;">
+        <div style="font-size:0.52em; font-weight:700; color:var(--highlight); margin-bottom:4px;">OUTPUT</div>
+        <div style="background:rgba(139,148,158,0.08); border-radius:4px; padding:8px; font-size:0.65em; color:var(--text); opacity:0.7;">Text response</div>
+      </div>
+    </div>
+
+    <!-- Context window limit -->
+    <div style="position:absolute; bottom:0; left:0; right:0;">
+      <div style="border-top:2px dashed var(--highlight); padding-top:4px; display:flex; justify-content:space-between; font-size:0.58em;">
+        <span style="color:var(--highlight); font-weight:600;">Context window</span>
+        <span style="color:var(--highlight);">~200K tokens</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모델별 컨텍스트 크기 -->
+  <div class="fragment" style="display:flex; justify-content:center; gap:8px; font-size:0.68em; margin-top:6px;">
+    <span style="background:var(--surface); padding:3px 10px; border-radius:12px; border:1px solid var(--accent); color:var(--accent); font-weight:600;">Cursor Sonnet ~200K</span>
+    <span style="background:var(--surface); padding:3px 10px; border-radius:12px; border:1px solid var(--border); color:var(--muted);">Claude Opus 1M</span>
+    <span style="background:var(--surface); padding:3px 10px; border-radius:12px; border:1px solid var(--border); color:var(--muted);">GPT-4o 128K</span>
+    <span style="background:var(--surface); padding:3px 10px; border-radius:12px; border:1px solid var(--border); color:var(--muted);">Gemini 2.5 Pro 1M</span>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────
+     SECTION 05 — Cursor 실무 팁
      05-a — @참조 3가지 표
 ─────────────────────────────────────────────── -->
 <section data-auto-animate>
