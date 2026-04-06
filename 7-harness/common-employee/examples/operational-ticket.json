@@ -1,0 +1,37 @@
+{
+  "ticket": {
+    "key": "OPS-201",
+    "summary": "Payroll sync timeout after deployment",
+    "description": "The payroll synchronization job timed out after a deployment and needs runtime recovery.",
+    "issue_type": "Incident",
+    "project": "OPS",
+    "priority": "High",
+    "labels": ["ops", "incident"]
+  },
+  "knowledge": {
+    "runbook_refs": ["runbooks/payroll-timeout.md#recovery"],
+    "past_solution_refs": ["OPS-77"],
+    "selected_solution": "Reset the payroll sync worker and confirm the downstream health checks.",
+    "alternatives": [
+      {
+        "option": "Rollback the deployment",
+        "reason": "The worker reset path is documented and lower risk."
+      }
+    ],
+    "risks": ["Confirm no duplicate payroll jobs are active before resolving the ticket."]
+  },
+  "actions": [
+    {
+      "system": "Jira",
+      "action": "comment",
+      "risk": "low",
+      "description": "Share the recovery plan with stakeholders."
+    },
+    {
+      "system": "Jira",
+      "action": "transition",
+      "risk": "medium",
+      "description": "Move the ticket to resolved after the runtime validation."
+    }
+  ]
+}

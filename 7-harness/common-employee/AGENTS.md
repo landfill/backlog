@@ -92,6 +92,7 @@ Jira 티켓이 배정되면 Lead가 분석하고 계획을 세우며, 전담 에
 - `docs/status/tracker.md`는 Lead 또는 Coordinator만 갱신하고, 다른 역할의 세부 evidence는 `docs/status/ongoing/`과 review report에 남긴다
 - 단계 handoff에는 review report, cleanup 상태, 검증 근거를 함께 남긴다
 - risky cleanup이나 큰 구조 변경 전에는 `checkpoint_ref`를 남긴다
+- V1 런타임에서는 `runtime/autonomous-runtime.db`를 상태 진실원으로 사용하고, 상태 문서는 서비스가 생성·갱신한다
 
 ## 문서 탐색 규칙
 

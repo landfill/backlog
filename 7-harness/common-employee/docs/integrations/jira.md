@@ -5,6 +5,23 @@
 Jira는 에이전트 팀의 **주 입력/출력 채널**이다.
 티켓이 배정되면 여기서 업무가 시작되고, 처리 결과가 여기에 기록된다.
 
+## 현재 구현 상태
+
+- 현재 런타임은 **Jira Cloud + API Token Basic auth**를 기준으로 구현되어 있다.
+- 구현 경로:
+  - `src/common_employee_runtime/jira.py` — Jira Cloud REST client
+  - `src/common_employee_runtime/service.py` — Jira-backed runtime processing path
+  - `src/common_employee_runtime/web.py` — Jira issue search/load/process UI
+- 활성화 조건:
+  - `ATLASSIAN_BASE_URL`
+  - `ATLASSIAN_EMAIL`
+  - `ATLASSIAN_API_TOKEN`
+- 선택 설정:
+  - `ATLASSIAN_JIRA_POLL_JQL` — 웹 콘솔의 기본 Jira 검색 JQL
+
+현재 구현은 단일 운영자 환경을 기준으로 하며,
+멀티유저 인증/세션 모델은 포함하지 않는다.
+
 ## 사용 에이전트별 권한
 
 | 에이전트 | 읽기 | 쓰기 | 주요 용도 |
@@ -44,6 +61,10 @@ Jira는 에이전트 팀의 **주 입력/출력 채널**이다.
 | attachment | 첨부파일 → 추가 정보 | Analyst |
 | issuelinks | 연결된 티켓 → 관련 이력 | Analyst |
 
+현재 구현 메모:
+- REST 경로: `GET /rest/api/3/issue/{issueIdOrKey}`
+- description은 Atlassian Document Format(ADF)일 수 있으므로 plain text로 평탄화해서 런타임에 전달한다.
+
 ### 유사 티켓 검색 (Analyst)
 
 **검색 방식**: JQL 기반
@@ -60,6 +81,10 @@ reporter = {reporter} AND status = Done ORDER BY resolved DESC
 ```
 
 **검색 제한**: 최대 20건/쿼리, 3개월 이내 우선
+
+현재 구현 메모:
+- REST 경로: `GET /rest/api/3/search`
+- 웹 콘솔 dashboard에서 JQL 검색 결과를 바로 노출한다.
 
 ### 티켓 이벤트 감지
 
@@ -103,6 +128,11 @@ reporter = {reporter} AND status = Done ORDER BY resolved DESC
 확인이 필요하시면 댓글로 알려주세요.
 ```
 
+현재 구현 메모:
+- REST 경로: `POST /rest/api/3/issue/{issueIdOrKey}/comment`
+- Jira Cloud v3 댓글 본문은 ADF 문서로 변환해 전송한다.
+- 현재 코멘트는 런타임 결과(state/stage/classification/confidence/gates) 요약만 남긴다.
+
 ### 상태 변경 (Executor)
 
 **허용 전환:**
@@ -117,6 +147,12 @@ reporter = {reporter} AND status = Done ORDER BY resolved DESC
 **금지 전환:**
 - 해결됨 → 종료: 사용자 확인 후에만 (에이전트가 직접 종료하지 않음)
 - 어떤 상태 → 취소: Lead 승인 + 사용자 동의 필요
+
+현재 구현 메모:
+- REST 경로:
+  - `GET /rest/api/3/issue/{issueIdOrKey}/transitions`
+  - `POST /rest/api/3/issue/{issueIdOrKey}/transitions`
+- 구현은 transition 이름/목적 상태 이름을 받아 현재 가능한 transition ID를 조회 후 실행한다.
 
 ### 필드 업데이트 (Executor)
 

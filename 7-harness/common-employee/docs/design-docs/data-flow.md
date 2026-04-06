@@ -39,6 +39,10 @@
 데이터 이동은 아래 경계를 넘을 때마다 최소화와 검증을 수행한다.
 
 - 외부 시스템 → 에이전트 실행 환경
+- 로컬 브라우저 → 웹 콘솔 엔드포인트
+- 에이전트 실행 환경 → `runtime/autonomous-runtime.db`
+- `runtime/autonomous-runtime.db` → 상태 산출물 Markdown
+- `runtime/autonomous-runtime.db` / 상태 산출물 → 로컬 웹 콘솔 읽기 화면
 - 에이전트 실행 환경 → 상태 산출물 (`tracker`, `task brief`, `ongoing plan`, `review report`)
 - 상태 산출물 → `decision log`와 보고서
 - 내부 상태 문서 → Jira / Teams / Outlook / Confluence 같은 외부 공유 채널
@@ -112,6 +116,44 @@ Executor는 승인된 액션만 수행한다.
 - 현재 외부 상태를 먼저 확인한다
 - 설명 불가 상태면 `BLOCKED`로 전환한다
 
+### 4-A. 로컬 웹 콘솔
+
+웹 콘솔은 새로운 업무 로직을 추가하지 않고
+기존 runtime service와 상태 산출물을 브라우저로 노출하는 얇은 표면이다.
+
+허용 입력:
+- mock/manual intake JSON
+- Jira issue key
+- Jira search JQL
+- operator-supplied knowledge/actions JSON
+
+허용 출력:
+- 최근 run 목록
+- 개별 run의 gate 결과와 event 요약
+- `docs/status/*`, `docs/generated/decision-logs/*` 안의 generated artifact
+- Jira search 결과 요약
+- Jira issue 본문 요약
+
+금지:
+- `runtime/autonomous-runtime.db` 원시 테이블 직접 노출
+- 워크스페이스 밖 파일 경로 열람
+- 민감 원문을 redaction 없이 브라우저에 렌더링
+
+### 4-B. Jira-backed processing
+
+웹 콘솔 또는 런타임이 Jira issue를 직접 다룰 때는 아래 흐름을 따른다.
+
+1. Jira issue 메타데이터 조회
+2. description(ADF 가능)을 plain text로 평탄화
+3. operator가 knowledge/actions를 보완
+4. 기존 runtime service 경로로 처리
+5. 승인된 결과만 Jira comment / transition으로 동기화
+
+추가 금지:
+- Jira 원문을 장기 보관용 local artifact에 그대로 복제
+- transition 가능 여부 확인 없이 상태 변경 시도
+- 허용되지 않은 프로젝트/티켓에 서비스 계정으로 쓰기
+
 ### 5. 보고와 외부 공유
 
 Reporter는 실행 결과를 사람과 시스템이 다시 읽을 수 있는 형태로 바꾼다.
@@ -146,6 +188,8 @@ Reporter는 실행 결과를 사람과 시스템이 다시 읽을 수 있는 형
 | `ongoing plan` | 현재 evidence, 실패 원인, 마지막 안전 지점, 다음 단계 | 불필요한 원문 전체 복제 |
 | `review report` | verdict, checked, evidence, cleanup 상태, open risk | 민감 본문 원문, 설명 없는 verdict |
 | `decision log` | 판단 근거, 참조 경로, 마스킹된 발췌, 판단 주체 | 비밀값, 원문 전체, 불필요한 개인정보 |
+| `runtime/autonomous-runtime.db` | ticket key, stage, verdict, attempts, redacted evidence reference | Restricted/Sensitive 원문, 자격 증명, 원문 첨부 |
+| 로컬 웹 콘솔 화면 | redacted run summary, gate 결과, generated artifact 내용 | DB 원시 dump, 워크스페이스 밖 파일, 비밀값 |
 
 ## LLM 입력 경계
 

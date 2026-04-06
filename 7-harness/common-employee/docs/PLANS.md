@@ -13,6 +13,9 @@
 - 저장소 운영 계약 정렬 완료
 - 착수 전 품질/보안/신뢰성/V1 범위 문서 보강 완료
 - 구현 전 필수 분기/데이터 흐름/설계 잠금 기준 보강 완료
+- 자율 운영 런타임 기초 골격 구현 완료
+- 로컬 웹 콘솔까지 포함한 runtime 운영 표면 구현 완료
+- Jira Cloud-backed single-operator service 구현 및 live smoke 완료
 - 남은 예정 문서는 후속 backlog로 관리
 
 ---
@@ -120,6 +123,53 @@
 | `docs/design-docs/design-freeze-matrix.md` | ✅ 추가 완료 |
 | `docs/pre-kickoff-checklist.md` | ✅ 추가 완료 |
 | `docs/PLANS.md` | ✅ 갱신 완료 |
+
+## Phase 8: 자율 운영 런타임 기반 — ✅ 완료
+
+문서 계약을 실제 서비스 상태 전이와 gate 정책으로 옮기는 최소 실행 런타임을 구축한다.
+
+| 산출물 | 상태 |
+|---|---|
+| `src/common_employee_runtime/service.py` | ✅ 추가 완료 |
+| `src/common_employee_runtime/store.py` | ✅ 추가 완료 |
+| `src/common_employee_runtime/cli.py` | ✅ 추가 완료 |
+| `tests/test_runtime_service.py` | ✅ 추가 완료 |
+| `runtime/.gitignore` | ✅ 추가 완료 |
+| `docs/plans/2026-04-06-autonomous-runtime-design.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-06-autonomous-runtime-implementation.md` | ✅ 추가 완료 |
+
+## Phase 9: 로컬 웹 UI 운영 콘솔 — ✅ 완료
+
+문서와 런타임 상태를 그대로 재사용하는 로컬 브라우저 운영 콘솔을 추가한다.
+
+| 산출물 | 상태 |
+|---|---|
+| `src/common_employee_runtime/web.py` | ✅ 추가 완료 |
+| `pyproject.toml` (`common-employee-web` entrypoint) | ✅ 갱신 완료 |
+| `tests/test_runtime_service.py` | ✅ 웹 콘솔 검증 추가 완료 |
+| `docs/plans/2026-04-06-web-ui-console-design.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-06-web-ui-console-implementation.md` | ✅ 추가 완료 |
+| `docs/product-specs/v1-scope.md` | ✅ 범위 갱신 완료 |
+| `docs/design-docs/data-flow.md` | ✅ 웹 콘솔 경계 반영 완료 |
+| `docs/SECURITY.md` | ✅ 웹 콘솔 노출 제한 반영 완료 |
+| `docs/RELIABILITY.md` | ✅ 웹 콘솔 복구 기준 반영 완료 |
+
+## Phase 10: Jira Cloud-backed service — ✅ 완료
+
+로컬 콘솔을 실제 Jira Cloud issue를 다루는 단일 운영자 서비스로 확장한다.
+
+| 산출물 | 상태 |
+|---|---|
+| `src/common_employee_runtime/jira.py` | ✅ 추가 완료 |
+| `src/common_employee_runtime/service.py` | ✅ Jira-backed 처리 경로 추가 완료 |
+| `src/common_employee_runtime/web.py` | ✅ Jira search/load/process UI 추가 완료 |
+| `tests/test_runtime_service.py` | ✅ fake Jira 서버 기반 검증 추가 완료 |
+| `.omx/plans/prd-common-employee-jira-service.md` | ✅ 추가 완료 |
+| `.omx/plans/test-spec-common-employee-jira-service.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-06-jira-service-design.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-06-jira-service-implementation.md` | ✅ 추가 완료 |
+| `docs/integrations/jira.md` | ✅ 현재 구현 상태 반영 완료 |
+| `docs/integrations/auth-strategy.md` | ✅ Cloud auth 환경 변수 반영 완료 |
 
 ---
 

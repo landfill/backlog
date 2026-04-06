@@ -41,6 +41,8 @@ repository-level `harness/core/docs/repository-reliability.md`를
 - Gate 1, Gate 2, Gate 3에는 review report를 남긴다.
 - 마지막 안전 지점과 cleanup 상태는 ongoing plan 또는 review report에 남긴다.
 - 완료 전에는 unresolved item이 남아 있어도 숨기지 않고 next action으로 연결한다.
+- 런타임 상태 저장소가 있으면 Markdown 산출물은 그 상태를 다시 만들 수 있는 투영이어야 한다.
+- 웹 콘솔이 제출한 intake도 CLI와 동일한 runtime/service 경로를 통과해야 한다.
 
 ## 실패 유형
 
@@ -81,7 +83,9 @@ repository-level `harness/core/docs/repository-reliability.md`를
 - risky cleanup이나 큰 구조 변경 전에는 `checkpoint_ref`를 남긴다.
 - 안정 상태에 도달했으면 마지막 안전 지점을 갱신한다.
 - 중단 후 복구는 `tracker.md`, ongoing plan, 마지막 review report 순으로 상태를 복원한다.
+- 런타임 DB가 있으면 먼저 DB 상태를 읽고, Markdown 산출물은 동기화 검증에 사용한다.
 - 반복 실패 조건이 충족되면 즉시 rollback loop로 전환한다.
+- 웹 콘솔 장애 시에도 authoritative state는 DB와 Markdown 산출물에 남아 있어야 하며, UI는 재기동 후 같은 상태를 다시 읽을 수 있어야 한다.
 
 ## Gate별 신뢰성 확인 포인트
 
@@ -90,6 +94,14 @@ repository-level `harness/core/docs/repository-reliability.md`를
 | Gate 1 | 근거가 충분해 다음 단계가 재탐색 없이 실행 가능해야 한다 |
 | Gate 2 | 실행 결과가 추적 가능하고, 실패 시 어디까지 반영됐는지 설명 가능해야 한다 |
 | Gate 3 | 로그와 보고만 보고도 상태 복기가 가능해야 한다 |
+
+## 웹 콘솔 확인 포인트
+
+- 폼 제출이 runtime service의 단일 진입점으로 연결돼야 한다.
+- 최근 run 목록과 run detail은 DB/current artifacts와 모순되지 않아야 한다.
+- artifact viewer는 허용 경로만 열고, 잘못된 경로는 차단 응답을 반환해야 한다.
+- Jira issue fetch/search/process도 동일한 runtime service 계약을 재사용해야 한다.
+- Jira transition은 실행 직전 조회한 available transition 목록 기준으로만 수행해야 한다.
 
 ## 차단 조건
 

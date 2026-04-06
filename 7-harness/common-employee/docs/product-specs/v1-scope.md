@@ -60,7 +60,15 @@ Jira 기반 티켓 처리에서
 - glossary, escalation matrix
 - raw intake 기록 규칙
 
-### 6. 구현 전 설계 잠금
+### 6. 로컬 운영 UI
+
+- manual/mock intake payload 제출용 웹 콘솔
+- Jira Cloud issue 검색 / 로드 / 처리용 웹 콘솔
+- 최근 runtime run 목록과 terminal state 요약
+- run 상세, gate 결과, generated artifact 조회
+- 기존 runtime / status artifact / redaction 규칙 재사용
+
+### 7. 구현 전 설계 잠금
 
 - `docs/design-docs/data-flow.md`
 - `docs/design-docs/design-freeze-matrix.md`
@@ -70,7 +78,8 @@ Jira 기반 티켓 처리에서
 
 - 확신도 낮음 상태의 완전 자율 실행
 - 다중 조직 / 다중 테넌트 권한 모델
-- 대시보드 UI 또는 운영 콘솔 구현
+- 실시간 협업형 대시보드 또는 별도 프론트엔드 SPA
+- 인증이 붙은 다중 사용자 운영 포털
 - 첨부파일 대량 처리, OCR, 비정형 문서 자동 추출
 - Teams/Outlook/Jira 외의 추가 채널 확장
 - self-healing 또는 자기 수정형 에이전트 구조
@@ -81,6 +90,7 @@ Jira 기반 티켓 처리에서
 |---|---|
 | 운영 티켓 기본 플로우 | 문서 기준으로 end-to-end 설명과 검증이 가능 |
 | 상태 산출물 | 모든 처리에 생성 규칙이 적용됨 |
+| 로컬 운영 UI | 브라우저에서 mock/manual intake와 Jira issue load, run/artifact 조회가 가능 |
 | 품질 판정 | Gate 1/2/3 pass/fail 기준이 문서화됨 |
 | 보안 기준 | 보호 대상, 권한, 금지 흐름이 app-level로 명시됨 |
 | 신뢰성 기준 | retry, recovery, rollback, 상태 복구 기준이 명시됨 |

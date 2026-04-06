@@ -31,6 +31,7 @@ repository-level `harness/core/docs/repository-security.md`를
 이 앱은 아래 경계를 넘을 때마다 데이터 최소화와 권한 검증을 수행한다.
 
 - 외부 시스템 ↔ 에이전트 실행 환경
+- 로컬 브라우저 ↔ 로컬 웹 콘솔
 - 에이전트 실행 환경 ↔ 문서 저장소
 - 내부 상태 문서 ↔ 외부 공유 채널
 - 사람 승인 전 ↔ 사람 승인 후
@@ -67,17 +68,30 @@ repository-level `harness/core/docs/repository-security.md`를
 - 민감 정보, 내부 토큰, 전체 첨부 내용, 내부 운영 세부 절차는 외부 공유 메시지에 넣지 않는다.
 - 링크 공유가 가능한 경우 본문 복제보다 링크를 우선한다.
 
+### 5. 로컬 웹 콘솔 노출 제한
+
+- 웹 콘솔은 로컬 개발/검증 환경 전용이다.
+- 웹 콘솔은 `docs/status/*`와 `docs/generated/decision-logs/*`의 generated artifact만 열람 대상으로 허용한다.
+- 워크스페이스 밖 경로, DB 원시 내용, redaction 전 민감 본문은 브라우저에 직접 노출하지 않는다.
+- 브라우저에서 제출하는 intake payload도 기존 runtime redaction 규칙과 동일한 기준을 따른다.
+- Jira Cloud 자격 증명은 환경 변수로만 주입하고 UI에 노출하지 않는다.
+
 ## 허용 / 금지 데이터 흐름
 
 | 데이터 흐름 | 허용 여부 | 조건 |
 |---|---|---|
 | 티켓 메타데이터 → tracker / ongoing plan | 허용 | 티켓 ID, 상태, owner, 다음 행동 수준만 기록 |
+| 티켓 메타데이터 → `runtime/autonomous-runtime.db` | 허용 | stage, verdict, attempts, redacted evidence reference만 저장 |
 | runbook 경로 / 사례 ID → decision log | 허용 | 참조 근거 수준으로만 기록 |
 | 민감 원문 → decision log / 보고서 | 금지 | 요약 또는 마스킹된 발췌만 허용 |
+| 민감 원문 → `runtime/autonomous-runtime.db` | 금지 | redacted summary 없이 원문 저장 금지 |
 | 자격 증명 → 코드 / 문서 / 로그 | 금지 | 환경 변수 또는 시크릿 매니저만 허용 |
 | 민감 데이터 → LLM 입력 | 조건부 허용 | 목적 최소화, 직접 식별자 마스킹, 불필요 원문 제거 |
 | 원본 첨부파일 → `docs/domain-knowledge/raw/` | 조건부 허용 | intake 기록, 저장 이유, 접근 범위가 남아야 함 |
 | 외부 시스템 결과 → 외부 공유 채널 | 조건부 허용 | 유관자에게 필요한 최소 결과만 전달 |
+| generated artifact → 로컬 웹 콘솔 | 허용 | `docs/status/*`, `docs/generated/decision-logs/*` 하위의 redacted/generated 파일만 허용 |
+| 워크스페이스 밖 파일 → 로컬 웹 콘솔 | 금지 | 경로 탐색/원시 파일 노출 금지 |
+| Jira issue 본문 → 로컬 artifact | 조건부 허용 | 평탄화/요약 후 최소 범위만 허용, 원문 전체 복제 금지 |
 
 ## 인증 / 자격 증명 규칙
 

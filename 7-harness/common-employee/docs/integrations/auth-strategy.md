@@ -21,6 +21,7 @@
 **Cloud 환경:**
 - OAuth 2.0 (3LO) 또는 API Token + Basic Auth
 - API Token은 서비스 계정에 발급
+- 현재 `common-employee`의 Jira 실구현은 **서비스 계정 + API Token + Basic Auth**를 사용한다
 
 **Server/Data Center 환경:**
 - Personal Access Token 또는 OAuth 1.0a
@@ -49,12 +50,26 @@
 ATLASSIAN_BASE_URL=https://company.atlassian.net
 ATLASSIAN_EMAIL=agent@company.com
 ATLASSIAN_API_TOKEN=<시크릿 매니저에서 주입>
+ATLASSIAN_JIRA_POLL_JQL=assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC
 
 # Microsoft Graph
 MS_TENANT_ID=<Azure AD 테넌트>
 MS_CLIENT_ID=<앱 등록 클라이언트 ID>
 MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
 ```
+
+### `.env` 파일 사용
+
+로컬 단일 운영자 환경에서는 `common-employee/.env` 파일로도 같은 값을 관리할 수 있다.
+
+- 예시 파일: `common-employee/.env.example`
+- 실제 비밀값 파일: `common-employee/.env` (git ignore)
+- 우선순위:
+  1. 프로세스 환경 변수
+  2. workspace `.env`
+
+즉, 배포/CI에서는 환경 변수 주입을 우선하고,
+로컬 개발/검증에서는 `.env`를 사용할 수 있다.
 
 ### 시크릿 매니저 옵션
 
@@ -66,6 +81,8 @@ MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
 | 환경 변수 (최소) | 초기 개발/PoC 단계 |
 
 > 구현 단계에서 인프라 환경에 맞게 확정한다.
+> 현재 Jira Cloud 실구현은 위 Atlassian 값 3개가 있어야 활성화된다.
+> 값은 환경 변수 또는 `common-employee/.env` 중 하나로 제공할 수 있다.
 
 ---
 

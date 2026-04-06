@@ -31,6 +31,7 @@
 | end-to-end 단계 순서와 예외 흐름 | `docs/product-specs/ticket-lifecycle.md` | `AGENTS.md`, `ARCHITECTURE.md` | Blocker | 단계 생략, handoff 제거, 예외 흐름 추가는 설계 보완 후에만 가능하다 |
 | 분기, 확신도, 승인 경로, 액션 위험도 | `docs/product-specs/decision-tree.md` | `docs/agent-behaviors/auto-resolution.md`, `docs/agent-behaviors/ticket-triage.md`, `docs/agent-behaviors/project-management.md` | Blocker | 새 액션, 새 위험도, 새 승인 경로는 구현 중 임의 추가하지 않는다 |
 | 데이터 흐름과 신뢰 경계 | `docs/design-docs/data-flow.md` | `ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/status/README.md` | Blocker | 데이터 저장 위치, 요약/마스킹 규칙, LLM 입력 경계는 구현 중 임의 완화하지 않는다 |
+| 런타임 상태 저장 위치와 허용 데이터 | `docs/design-docs/data-flow.md`, `docs/SECURITY.md`, `docs/RELIABILITY.md` | `ARCHITECTURE.md` | Blocker | `runtime/autonomous-runtime.db` 같은 상태 저장소는 허용 데이터와 복구 규칙이 문서화되어야 한다 |
 | 품질 gate와 완료 판정 | `docs/product-specs/quality-criteria.md` | `docs/RELIABILITY.md`, `harness/core/templates/` | Blocker | pass/fail 기준이나 required evidence는 구현 편의로 낮추지 않는다 |
 | 보안 정책 | `docs/SECURITY.md` | `docs/integrations/auth-strategy.md`, `docs/design-docs/data-flow.md` | Blocker | 시크릿, 민감 원문, 권한 범위는 구현 중 예외를 만들지 않는다 |
 | 신뢰성, rollback, cleanup | `docs/RELIABILITY.md` | `harness/core/workflows/*.md`, `docs/status/README.md` | Blocker | 추적 불가 write, 숨겨진 재시도, 상태 문서 생략은 허용하지 않는다 |
