@@ -2,9 +2,13 @@
 2-codex/
 3-gemini/
 4-cursor/
+5/
+6-weblog/
 auto-operation/
+rev/
 slack/
 tmp/
+ideat/
 .DS_Store
 node_modules/
 .agents/
