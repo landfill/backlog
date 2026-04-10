@@ -189,7 +189,8 @@ V1 런타임의 authoritative state는 `common-employee/runtime/autonomous-runti
 [Executor] Confluence 페이지 생성/업데이트
   │
   ▼
-[Executor] Teams/Outlook 보고서 링크 공유
+[Executor] Jira 댓글 + Teams 웹훅 셀프 알림 공유
+[운영자] 필요 시 Outlook 수동 발송
 ```
 
 ### 3. 지식 정제 플로우: 원본 → 정제 → 활용
@@ -279,15 +280,15 @@ V1 런타임의 authoritative state는 `common-employee/runtime/autonomous-runti
 ### 1. 연동 계층 (Integration Layer)
 
 각 외부 시스템과의 인터페이스를 추상화한다.
-Executor가 쓰기 작업을, Analyst가 읽기 작업을 주로 사용한다.
+Executor가 승인된 쓰기 작업과 발송 준비를, Analyst가 읽기 작업을 주로 사용한다.
 상세 설계는 `docs/integrations/` 참조.
 
 | 시스템 | 읽기 (주로 Analyst) | 쓰기 (주로 Executor) | 주요 용도 |
 |---|---|---|---|
 | Jira | 티켓 조회, 검색, 이력 | 상태 변경, 댓글, 필드 업데이트 | 업무 입력/출력의 주 채널 |
 | Confluence | 위키 페이지 검색/읽기 | 보고서 생성/업데이트 | 지식 소스 + 보고 대상 |
-| Teams | 메시지 수신 | 메시지/알림 발송 | 실시간 커뮤니케이션 |
-| Outlook | 메일 수신 | 메일 발송 | 공식 알림/에스컬레이션 |
+| Teams | 해당 없음 | 웹훅 셀프 알림 발송 | 운영자 진행 상황 알림 |
+| Outlook | 해당 없음 | 메일 초안/발송 준비 | 운영자 수동 공식 메일 발송 보조 |
 
 ### 2. 에이전트 팀 (Agent Team)
 

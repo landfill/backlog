@@ -9,7 +9,7 @@
 
 - **보고서 작성**: Reporter
 - **보고서 품질 검증**: Guardian (Gate 3)
-- **보고서 발행 (Confluence/Teams)**: Executor
+- **보고서 발행 (Confluence/Jira/Teams 웹훅)**: Executor
 - **보고 주기 감독**: Lead
 
 ## 내부 handoff 보고와 외부 보고의 구분
@@ -117,7 +117,7 @@
 ## 유관자 공유
 
 티켓 처리 완료 또는 주요 진행 시점에 해당 유관자에게 공유.
-Confluence 페이지가 아닌 **Teams 메시지 또는 Jira 댓글**로 전달 (간결함 우선).
+Confluence 페이지가 아닌 **Jira 댓글**로 전달하고, 필요 시 Teams 웹훅으로 운영자 셀프 알림을 추가한다.
 
 ### 포함 항목
 
@@ -181,9 +181,9 @@ Coordinator가 관리하는 프로젝트성 티켓의 진행 보고.
       ↓
   [Executor] Confluence 페이지 생성
       ↓
-  [Executor] Teams 채널에 링크 공유
+  [Executor] Teams 웹훅으로 운영자 셀프 알림
       ↓
-  [Executor] Outlook 메일 발송 (주별 보고만)
+  [운영자] 필요 시 Outlook 메일 수동 발송
 ```
 
 ---

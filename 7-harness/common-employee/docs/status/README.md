@@ -29,3 +29,5 @@
 - 완료된 작업은 마지막 evidence와 남은 이슈를 포함해 `completed/`로 옮긴다
 - 런타임이 활성화된 경로에서는 문서가 수동 입력이 아니라 서비스 투영 결과여야 한다
 - 웹 콘솔이 추가되어도 authoritative state는 계속 `runtime/autonomous-runtime.db`와 generated Markdown 산출물에 둔다
+- 운영자 수동 액션이 포함된 외부 쓰기는 최소한 `준비됨(prepared)` evidence와 최종 관측 결과를 구분해 남긴다
+- Outlook 수동 SMTP 발송처럼 Executor와 운영자의 역할이 나뉘는 액션은 누가 무엇을 수행했는지 산출물에서 재구성 가능해야 한다

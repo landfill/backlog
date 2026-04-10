@@ -16,6 +16,9 @@
 - 자율 운영 런타임 기초 골격 구현 완료
 - 로컬 웹 콘솔까지 포함한 runtime 운영 표면 구현 완료
 - Jira Cloud-backed single-operator service 구현 및 live smoke 완료
+- Confluence live integration 구현 및 live smoke verification 완료
+- Microsoft Graph messaging phase는 히스토리로 보존
+- 현재 M365 기준선은 Outlook 수동 SMTP 발송 + Teams 웹훅 셀프 알림으로 재정렬 중
 - 남은 예정 문서는 후속 backlog로 관리
 
 ---
@@ -170,6 +173,67 @@
 | `docs/plans/2026-04-06-jira-service-implementation.md` | ✅ 추가 완료 |
 | `docs/integrations/jira.md` | ✅ 현재 구현 상태 반영 완료 |
 | `docs/integrations/auth-strategy.md` | ✅ Cloud auth 환경 변수 반영 완료 |
+
+## Phase 11: Confluence live integration — ✅ 완료
+
+Jira-backed 단일 운영자 서비스를 Confluence 검색/본문 조회 및 보고서 페이지 발행/업데이트까지 확장한다.
+
+| 산출물 | 상태 |
+|---|---|
+| `src/common_employee_runtime/confluence.py` | ✅ 추가 완료 |
+| `src/common_employee_runtime/service.py` | ✅ publish mode / Confluence flow 추가 완료 |
+| `src/common_employee_runtime/web.py` | ✅ Confluence search/read/publish UI 추가 완료 |
+| `tests/test_runtime_service.py` | ✅ Confluence 검증 추가 완료 |
+| `.omx/plans/prd-common-employee-confluence-service.md` | ✅ 추가 완료 |
+| `.omx/plans/test-spec-common-employee-confluence-service.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-07-confluence-service-design.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-07-confluence-service-implementation.md` | ✅ 추가 완료 |
+| `docs/integrations/confluence.md` | ✅ 현재 구현 상태 반영 완료 |
+| `docs/integrations/auth-strategy.md` | ✅ Confluence env 설정 반영 완료 |
+| live Confluence smoke | ✅ page read + page create/update 완료 |
+
+## Phase 12: Graph messaging — ✅ 완료 (히스토리)
+
+Jira + Confluence-backed 단일 운영자 서비스를 Microsoft Graph 기반 Outlook/Teams 수동 발송 표면까지 확장했던 히스토리 phase다.
+
+| 산출물 | 상태 |
+|---|---|
+| `src/common_employee_runtime/graph.py` | ✅ 추가 완료 |
+| `src/common_employee_runtime/service.py` | ✅ Graph manual send flow 추가 완료 |
+| `src/common_employee_runtime/web.py` | ✅ Outlook/Teams manual controls 추가 완료 |
+| `tests/test_runtime_service.py` | ✅ Graph 검증 추가 완료 |
+| `.omx/plans/prd-common-employee-graph-messaging.md` | ✅ 추가 완료 |
+| `.omx/plans/test-spec-common-employee-graph-messaging.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-07-graph-messaging-design.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-07-graph-messaging-implementation.md` | ✅ 추가 완료 |
+| `docs/integrations/teams.md` | ✅ 현재 구현/권한 blocker 반영 완료 |
+| `docs/integrations/outlook.md` | ✅ 현재 구현/live smoke 반영 완료 |
+| live Graph smoke | ✅ user lookup + Outlook send 완료 / Teams 403 blocker 확인 |
+
+## Phase 13: Delegated Graph transition — ⛔ 보류 (히스토리)
+
+Outlook/Teams Graph 연동을 operator-scoped delegated 모델로 재정렬하려 했던 히스토리 phase다. 현재 기준선에서는 Graph 자체를 활성 아키텍처로 채택하지 않는다.
+
+| 산출물 | 상태 |
+|---|---|
+| `.omx/plans/prd-common-employee-graph-delegated.md` | ✅ 추가 완료 |
+| `.omx/plans/test-spec-common-employee-graph-delegated.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-07-graph-delegated-design.md` | ✅ 추가 완료 |
+| `docs/plans/2026-04-07-graph-delegated-implementation.md` | ✅ 추가 완료 |
+| `docs/status/completed/2026-04-07-graph-delegated-review-report-lead.md` | ✅ blocker 기록 완료 |
+
+## Phase 14: M365 manual delivery realignment — 🔄 진행중
+
+Outlook과 Teams 연동을 현재 서비스 요건에 맞게 단순화한다.
+
+| 산출물 | 상태 |
+|---|---|
+| `docs/integrations/auth-strategy.md` | ✅ 수동 SMTP + Teams 웹훅 기준으로 재정렬 완료 |
+| `docs/integrations/outlook.md` | ✅ 메일 수동 발송 전용 기준으로 재정렬 완료 |
+| `docs/integrations/teams.md` | ✅ 웹훅 셀프 알림 기준으로 재정렬 완료 |
+| `docs/agent-behaviors/*` 관련 문서 | ✅ Graph/DM/메일 모니터링 가정 제거 + 분류 타임아웃 정책 정렬 완료 |
+| `docs/status/tracker.md` | ✅ 현재 기준선/다음 단계 반영 완료 |
+| code/config delivery surfaces | 🔄 문서 기준선에 맞춘 구현 정렬 예정 |
 
 ---
 
