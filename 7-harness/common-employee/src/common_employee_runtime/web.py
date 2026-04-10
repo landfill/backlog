@@ -56,9 +56,9 @@ Headers = list[tuple[str, str]]
 StartResponse = Callable[[str, Headers], None]
 
 
-def build_web_app(workspace: Path):
+def build_web_app(workspace: Path, *, service: AutonomousRuntimeService | None = None):
     workspace = Path(workspace)
-    service = AutonomousRuntimeService(workspace)
+    service = service or AutonomousRuntimeService(workspace)
     store = service.store
 
     def app(environ: dict[str, object], start_response: StartResponse) -> list[bytes]:
@@ -78,16 +78,45 @@ def build_web_app(workspace: Path):
                         if service.jira_client
                         else [],
                         jira_jql=query.get("jql", [""])[0] if service.jira_client else "",
+                        confluence_enabled=service.confluence_client is not None,
+                        confluence_results=service.list_confluence_pages(
+                            title=query.get("confluence_title", [""])[0] or ""
+                        )
+                        if service.confluence_client
+                        else [],
+                        confluence_title=query.get("confluence_title", [""])[0]
+                        if service.confluence_client
+                        else "",
+                        default_confluence_mode=service.confluence_client.config.publish_mode
+                        if service.confluence_client
+                        else "manual",
+                        smtp_enabled=service.smtp_client is not None,
+                        teams_webhook_enabled=service.teams_webhook_client is not None,
                     ),
                 )
             if method == "POST" and path == "/runs":
                 body = _read_request_body(environ)
-                payload_text = _extract_payload_json_from_form_body(body)
+                form = parse_qs(body, keep_blank_values=True)
+                payload_text = form.get("payload_json", [""])[0]
                 payload = json.loads(payload_text)
-                result = service.process_ticket(payload)
+                result = service.process_ticket(
+                    payload,
+                    confluence_publish_mode=form.get("confluence_publish_mode", [""])[0] or None,
+                    confluence_page_title=form.get("confluence_page_title", [""])[0] or None,
+                    confluence_page_id=form.get("confluence_page_id", [""])[0] or None,
+                )
                 ticket_key = quote(str(result["ticket_key"]), safe="")
                 start_response("303 See Other", [("Location", f"/runs/{ticket_key}")])
                 return [b""]
+            if method == "GET" and path.startswith("/confluence/pages/"):
+                page_id = unquote(path.removeprefix("/confluence/pages/"))
+                if service.confluence_client is None:
+                    return _html_response(
+                        start_response,
+                        _render_message(title="Confluence unavailable", message="Confluence client is not configured."),
+                        status="503 Service Unavailable",
+                    )
+                return _html_response(start_response, _render_confluence_page(service.get_confluence_page(page_id)))
             if method == "GET" and path.startswith("/jira/issues/"):
                 issue_key = unquote(path.removeprefix("/jira/issues/"))
                 if service.jira_client is None:
@@ -118,10 +147,60 @@ def build_web_app(workspace: Path):
                     actions=actions,
                     comment_on_complete=comment_on_complete,
                     transition_on_complete=transition_name,
+                    confluence_publish_mode=form.get("confluence_publish_mode", [""])[0] or None,
+                    confluence_page_title=form.get("confluence_page_title", [""])[0] or None,
+                    confluence_page_id=form.get("confluence_page_id", [""])[0] or None,
                 )
                 ticket_key = quote(str(result["ticket_key"]), safe="")
                 start_response("303 See Other", [("Location", f"/runs/{ticket_key}")])
                 return [b""]
+            if method == "POST" and path == "/confluence/publish":
+                if service.confluence_client is None:
+                    return _html_response(
+                        start_response,
+                        _render_message(title="Confluence unavailable", message="Confluence client is not configured."),
+                        status="503 Service Unavailable",
+                    )
+                body = _read_request_body(environ)
+                form = parse_qs(body, keep_blank_values=True)
+                ticket_key = form.get("ticket_key", [""])[0]
+                page_title = form.get("page_title", [""])[0] or None
+                page_id = form.get("page_id", [""])[0] or None
+                version_number_text = form.get("version_number", [""])[0].strip()
+                version_number = int(version_number_text) if version_number_text else None
+                service.publish_run_to_confluence(
+                    ticket_key,
+                    page_id=page_id,
+                    page_title=page_title,
+                    version_number=version_number,
+                )
+                start_response("303 See Other", [("Location", f"/runs/{quote(ticket_key, safe='')}")])
+                return [b""]
+            if method == "POST" and path == "/outlook/send":
+                if service.smtp_client is None:
+                    return _html_response(start_response, _render_message(title="SMTP unavailable", message="SMTP delivery client is not configured."), status="503 Service Unavailable")
+                body = _read_request_body(environ)
+                form = parse_qs(body, keep_blank_values=True)
+                recipients = [
+                    recipient.strip()
+                    for recipient in form.get("recipients", [""])[0].split(",")
+                    if recipient.strip()
+                ]
+                result = service.send_outlook_message(
+                    recipients,
+                    subject=form.get("subject", ["Smoke subject"])[0],
+                    html_body=form.get("html_body", ["<p>Smoke body</p>"])[0],
+                )
+                return _html_response(start_response, _render_delivery_result("Outlook send result", result))
+            if method == "POST" and path == "/teams/webhook":
+                if service.teams_webhook_client is None:
+                    return _html_response(start_response, _render_message(title="Teams webhook unavailable", message="Teams webhook client is not configured."), status="503 Service Unavailable")
+                body = _read_request_body(environ)
+                form = parse_qs(body, keep_blank_values=True)
+                result = service.send_teams_message(
+                    form.get("message_text", ["Webhook hello"])[0],
+                )
+                return _html_response(start_response, _render_delivery_result("Teams webhook result", result))
             if method == "GET" and path.startswith("/runs/"):
                 ticket_key = unquote(path.removeprefix("/runs/"))
                 run = store.get_run(ticket_key)
@@ -136,7 +215,15 @@ def build_web_app(workspace: Path):
                     )
                 return _html_response(
                     start_response,
-                    _render_run_detail(workspace, run, store.list_events(ticket_key)),
+                    _render_run_detail(
+                        workspace,
+                        run,
+                        store.list_events(ticket_key),
+                        confluence_enabled=service.confluence_client is not None,
+                        default_confluence_mode=service.confluence_client.config.publish_mode
+                        if service.confluence_client
+                        else "manual",
+                    ),
                 )
             if method == "GET" and path == "/artifacts":
                 relative_path = query.get("path", [""])[0]
@@ -251,6 +338,12 @@ def _render_dashboard(
     jira_enabled: bool = False,
     jira_results: list[dict[str, object]] | None = None,
     jira_jql: str = "",
+    confluence_enabled: bool = False,
+    confluence_results: list[dict[str, object]] | None = None,
+    confluence_title: str = "",
+    default_confluence_mode: str = "manual",
+    smtp_enabled: bool = False,
+    teams_webhook_enabled: bool = False,
 ) -> str:
     payload_text = payload_override or sample_payload
     runs = store.list_runs(limit=20)
@@ -315,6 +408,90 @@ def _render_dashboard(
         </section>
         """
 
+    if confluence_enabled:
+        results = confluence_results or []
+        if results:
+            confluence_rows = "".join(
+                "<tr>"
+                f"<td><a href=\"/confluence/pages/{quote(str(page['id']), safe='')}\">{escape(str(page['id']))}</a></td>"
+                f"<td>{escape(str(page['title']))}</td>"
+                f"<td>{escape(str(page.get('status', 'current')))}</td>"
+                "</tr>"
+                for page in results
+            )
+            confluence_results_markup = (
+                "<table><thead><tr><th>Page ID</th><th>Title</th><th>Status</th></tr></thead>"
+                f"<tbody>{confluence_rows}</tbody></table>"
+            )
+        else:
+            confluence_results_markup = "<p>검색 결과가 없습니다. 제목 일부를 바꿔 다시 시도하세요.</p>"
+        confluence_section = f"""
+        <section>
+          <h2>Confluence pages</h2>
+          <p>기본 publish mode: <strong>{escape(default_confluence_mode)}</strong></p>
+          <form method="get" action="/">
+            <label for="confluence_title">Page title</label>
+            <input id="confluence_title" name="confluence_title" value="{escape(confluence_title)}" placeholder="Runbook Report" />
+            <div class="actions"><button type="submit">Search Confluence</button></div>
+          </form>
+          {confluence_results_markup}
+          <form method="get" action="/confluence/pages/" onsubmit="event.preventDefault(); window.location='/confluence/pages/' + encodeURIComponent(this.page_id.value);">
+            <label for="page_id">Page ID</label>
+            <input id="page_id" name="page_id" placeholder="12345" />
+            <div class="actions"><button type="submit">Load page</button></div>
+          </form>
+        </section>
+        """
+    else:
+        confluence_section = """
+        <section>
+          <h2>Confluence integration</h2>
+          <p>환경 변수 `ATLASSIAN_CONFLUENCE_SPACE`가 설정되면 실제 Confluence 검색/발행이 활성화됩니다.</p>
+        </section>
+        """
+
+    if smtp_enabled:
+        outlook_section = """
+        <section>
+          <h2>Outlook manual delivery</h2>
+          <form method="post" action="/outlook/send">
+            <label for="outlook_recipients">Recipients</label>
+            <input id="outlook_recipients" name="recipients" placeholder="leader@example.com, ops@example.com" />
+            <label for="outlook_subject">Subject</label>
+            <input id="outlook_subject" name="subject" value="common-employee smoke" />
+            <label for="outlook_html_body">HTML body</label>
+            <textarea id="outlook_html_body" name="html_body" rows="6">&lt;p&gt;common-employee manual SMTP smoke&lt;/p&gt;</textarea>
+            <div class="actions"><button type="submit">Send Outlook mail</button></div>
+          </form>
+        </section>
+        """
+    else:
+        outlook_section = """
+        <section>
+          <h2>Outlook manual delivery</h2>
+          <p>환경 변수 `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_ADDRESS`가 설정되면 수동 메일 발송이 활성화됩니다.</p>
+        </section>
+        """
+
+    if teams_webhook_enabled:
+        teams_section = """
+        <section>
+          <h2>Teams webhook</h2>
+          <form method="post" action="/teams/webhook">
+            <label for="message_text">Teams message</label>
+            <textarea id="message_text" name="message_text" rows="4">common-employee webhook smoke</textarea>
+            <div class="actions"><button type="submit">Send Teams webhook</button></div>
+          </form>
+        </section>
+        """
+    else:
+        teams_section = """
+        <section>
+          <h2>Teams webhook</h2>
+          <p>환경 변수 `TEAMS_PROGRESS_WEBHOOK_URL`이 설정되면 운영자 셀프 알림이 활성화됩니다.</p>
+        </section>
+        """
+
     error_markup = f"<p class=\"error\">{escape(error_message)}</p>" if error_message else ""
     body = f"""
     <section>
@@ -326,10 +503,19 @@ def _render_dashboard(
       <h2>Run intake</h2>
       <form method="post" action="/runs">
         <textarea name="payload_json" rows="24">{escape(payload_text)}</textarea>
+        <label for="confluence_publish_mode">Confluence publish mode</label>
+        {_render_confluence_publish_mode_select("confluence_publish_mode", default_confluence_mode)}
+        <label for="confluence_page_title">Confluence page title</label>
+        <input id="confluence_page_title" name="confluence_page_title" placeholder="OPS-123 runtime report" />
+        <label for="confluence_page_id">Confluence page id (optional update target)</label>
+        <input id="confluence_page_id" name="confluence_page_id" placeholder="12345" />
         <div class="actions"><button type="submit">Process payload</button></div>
       </form>
     </section>
     {jira_section}
+    {confluence_section}
+    {outlook_section}
+    {teams_section}
     <section>
       <h2>Recent runs</h2>
       {runs_markup}
@@ -342,7 +528,14 @@ def _render_dashboard(
     return _layout("common-employee Web Console", body)
 
 
-def _render_run_detail(workspace: Path, run: dict[str, object], events: list[dict[str, object]]) -> str:
+def _render_run_detail(
+    workspace: Path,
+    run: dict[str, object],
+    events: list[dict[str, object]],
+    *,
+    confluence_enabled: bool = False,
+    default_confluence_mode: str = "manual",
+) -> str:
     gate_results = dict(run.get("gate_results", {}))
     gate_items = "".join(
         f"<li><strong>{escape(str(key))}</strong>: {escape(str(value))}</li>"
@@ -358,6 +551,24 @@ def _render_run_detail(workspace: Path, run: dict[str, object], events: list[dic
     ) or "<li>none</li>"
 
     artifact_links = _render_artifact_links(workspace, str(run["ticket_key"]))
+    publish_form = ""
+    if confluence_enabled and str(run.get("state")) == "completed":
+        publish_form = f"""
+        <section>
+          <h2>Publish to Confluence</h2>
+          <form method="post" action="/confluence/publish">
+            <input type="hidden" name="ticket_key" value="{escape(str(run['ticket_key']))}" />
+            <label for="page_title">Page title</label>
+            <input id="page_title" name="page_title" value="{escape(str(run['ticket_key']))} runtime report" />
+            <label for="page_id">Existing page id (optional)</label>
+            <input id="page_id" name="page_id" placeholder="12345" />
+            <label for="version_number">Existing version number (optional)</label>
+            <input id="version_number" name="version_number" placeholder="1" />
+            <p class="muted">Default publish mode: {escape(default_confluence_mode)}</p>
+            <div class="actions"><button type="submit">Publish to Confluence</button></div>
+          </form>
+        </section>
+        """
     body = f"""
     <section>
       <p><a href="/">← Dashboard</a></p>
@@ -383,6 +594,7 @@ def _render_run_detail(workspace: Path, run: dict[str, object], events: list[dic
       <h2>Artifacts</h2>
       {artifact_links}
     </section>
+    {publish_form}
     """
     return _layout(f"Run detail: {run['ticket_key']}", body)
 
@@ -426,11 +638,43 @@ def _render_jira_issue(issue_key: str, payload: dict[str, object]) -> str:
         <label for="transition_on_complete">Transition on complete</label>
         <input id="transition_on_complete" name="transition_on_complete" placeholder="Done / Resolved" />
         <label><input type="checkbox" name="comment_on_complete" checked /> Add Jira comment after processing</label>
+        <label for="confluence_publish_mode">Confluence publish mode</label>
+        {_render_confluence_publish_mode_select("confluence_publish_mode", "manual")}
+        <label for="confluence_page_title">Confluence page title</label>
+        <input id="confluence_page_title" name="confluence_page_title" placeholder="{escape(issue_key)} runtime report" />
+        <label for="confluence_page_id">Confluence page id (optional update target)</label>
+        <input id="confluence_page_id" name="confluence_page_id" />
         <div class="actions"><button type="submit">Process Jira issue</button></div>
       </form>
     </section>
     """
     return _layout(f"Jira issue: {issue_key}", body)
+
+
+def _render_confluence_page(page: dict[str, object]) -> str:
+    body_value = str(dict(dict(page.get("body", {})).get("storage", {})).get("value", ""))
+    body = f"""
+    <section>
+      <p><a href="/">← Dashboard</a></p>
+      <h1>Confluence page: {escape(str(page.get('title', '')))}</h1>
+      <ul>
+        <li><strong>Page ID</strong>: {escape(str(page.get('id', '')))}</li>
+        <li><strong>Space</strong>: {escape(str(page.get('spaceId', '')))}</li>
+        <li><strong>Status</strong>: {escape(str(page.get('status', '')))}</li>
+      </ul>
+      <pre>{escape(body_value)}</pre>
+    </section>
+    """
+    return _layout(f"Confluence page: {page.get('title', '')}", body)
+
+
+def _render_confluence_publish_mode_select(field_id: str, selected_mode: str) -> str:
+    selected = selected_mode if selected_mode in {"manual", "immediate"} else "manual"
+    options = "".join(
+        f"<option value=\"{mode}\"{' selected' if mode == selected else ''}>{mode}</option>"
+        for mode in ("manual", "immediate")
+    )
+    return f"<select id=\"{escape(field_id)}\" name=\"confluence_publish_mode\">{options}</select>"
 
 
 def _render_message(*, title: str, message: str) -> str:
@@ -439,6 +683,17 @@ def _render_message(*, title: str, message: str) -> str:
       <p><a href="/">← Dashboard</a></p>
       <h1>{escape(title)}</h1>
       <p>{escape(message)}</p>
+    </section>
+    """
+    return _layout(title, body)
+
+
+def _render_delivery_result(title: str, result: dict[str, object]) -> str:
+    body = f"""
+    <section>
+      <p><a href="/">← Dashboard</a></p>
+      <h1>{escape(title)}</h1>
+      <pre>{escape(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))}</pre>
     </section>
     """
     return _layout(title, body)

@@ -13,7 +13,7 @@ Analyst가 솔루션 탐색 시 위키를 검색하고, Reporter/Executor가 보
   - `src/common_employee_runtime/service.py` — publish mode 및 page create/update flow
   - `src/common_employee_runtime/web.py` — Confluence search/read/manual publish UI
 - 활성화 조건:
-  - `ATLASSIAN_BASE_URL`
+  - `ATLASSIAN_CONFLUENCE_BASE_URL` 또는 `ATLASSIAN_BASE_URL`
   - `ATLASSIAN_EMAIL`
   - `ATLASSIAN_API_TOKEN`
   - `ATLASSIAN_CONFLUENCE_SPACE`
@@ -25,6 +25,7 @@ Analyst가 솔루션 탐색 시 위키를 검색하고, Reporter/Executor가 보
 기본 publish mode는 `manual`이다.
 즉시 발행은 웹 콘솔 또는 설정에서 `immediate`로 전환했을 때만 활성화된다.
 Confluence는 Jira와 같은 `ATLASSIAN_API_TOKEN`을 재사용한다.
+Confluence 도메인이 Jira와 다르면 `ATLASSIAN_CONFLUENCE_BASE_URL`을 별도로 둔다.
 
 ## 사용 에이전트별 권한
 

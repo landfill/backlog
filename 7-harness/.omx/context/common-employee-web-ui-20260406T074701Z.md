@@ -1,0 +1,27 @@
+# Ralph Context Snapshot
+
+- task statement: Build out `common-employee` through a working web UI (`$ralph common-employee를 웹UI 까지 포함해서 개발해.`)
+- desired outcome: A runnable `common-employee` app that keeps the current autonomous runtime behavior and adds a browser-based UI for intake/runs/artifacts visibility.
+- known facts/evidence:
+  - Repository/app harness read order completed through repository docs, workflows, roles, app entry docs, plans, tracker, architecture, design-freeze, security/reliability, status docs.
+  - `common-employee` currently has a Python runtime package (`src/common_employee_runtime`) with CLI + SQLite store + Markdown artifact projection + unittest coverage.
+  - Existing docs explicitly marked UI dashboards as out of scope for the autonomous runtime foundation.
+  - Current tracker shows phase 8 runtime foundation completed; next action references future adapter work.
+  - No `.omx/plans/prd-*.md` or `.omx/plans/test-spec-*.md` exist yet for this Ralph task.
+- constraints:
+  - Must respect repository/app harness, status artifact workflow, and app-level security/reliability docs.
+  - Must not store secrets/sensitive raw data in DB or artifacts.
+  - Ralph planning gate: do not start implementation until PRD + test spec exist.
+  - Brainstorming hard gate: present design and obtain user approval before implementation.
+  - Keep changes small/reversible, prefer reuse, no new dependency unless justified.
+- unknowns/open questions:
+  - Exact user expectation for UI scope (operator console vs. richer project dashboard).
+  - Whether to keep pure-stdlib Python or allow a lightweight web framework.
+  - Whether UI should support only mock/manual intake or actual Jira integration now.
+- likely codebase touchpoints:
+  - `common-employee/src/common_employee_runtime/`
+  - `common-employee/tests/`
+  - `common-employee/pyproject.toml`
+  - `common-employee/docs/plans/`
+  - `common-employee/docs/status/`
+  - `common-employee/docs/PLANS.md`, `ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/RELIABILITY.md`

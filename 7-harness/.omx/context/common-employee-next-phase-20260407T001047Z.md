@@ -1,0 +1,26 @@
+# Ralph Context Snapshot
+
+- task statement: Resume `common-employee` after the completed Jira Cloud-backed single-operator milestone and continue into the next implementation phase.
+- desired outcome: Pick one bounded next phase that fits the existing V1/runtime/docs contracts, then prepare design/plan artifacts before implementation.
+- known facts/evidence:
+  - Repository/app harness read order completed through repository core docs, workflows, app entry docs, plans, tracker, completed review, ongoing plan, security/reliability, and integration docs.
+  - `common-employee/docs/status/tracker.md` is `completed` for Phase 10 and names follow-up expansion as the next action.
+  - The verified baseline already includes Jira Cloud REST access, runtime orchestration, local web console, `.env` support, automated tests, diagnostics, and live Jira/UI smoke evidence.
+  - `common-employee/docs/status/completed/2026-04-06-next-session-brief.md` recommends follow-ups: Confluence live integration, Teams/Outlook live integration, Jira polling/webhook daemonization, and production hardening.
+  - Current docs are much more specific for Confluence than for Teams/Outlook concrete environment data, and Confluence is already part of the existing knowledge/reporting flow in the architecture and scope docs.
+- constraints:
+  - Must respect repository/app harness, V1 scope, design-freeze rules, security/reliability contracts, and state artifact workflow.
+  - Must not begin implementation until a design is presented and approved under the brainstorming gate.
+  - Must avoid storing secrets or sensitive raw payloads in logs, docs, DB, or UI.
+  - Must keep the next phase small, reviewable, and reversible.
+- unknowns/open questions:
+  - Which follow-up direction the user wants next.
+  - Whether the next phase should target knowledge/reporting (Confluence), notifications (Teams/Outlook), or runtime automation (polling/webhook).
+  - Whether live external verification should be attempted again in this session.
+- likely codebase touchpoints:
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/src/common_employee_runtime/`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/tests/`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/plans/`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/status/`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/.omx/plans/`

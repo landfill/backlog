@@ -1,0 +1,27 @@
+# Ralph Context Snapshot
+
+- task statement: Continue `common-employee` by implementing the delegated Microsoft Graph transition for Outlook and Teams.
+- desired outcome: Replace the current app-only Graph probing path with an operator-attended delegated Graph path that works during business hours with explicit MFA/sign-in, while keeping Jira/Confluence unchanged.
+- known facts/evidence:
+  - Repository/app harness and current phase docs are already in place for Phase 13 delegated Graph transition.
+  - `common-employee` currently has Graph manual actions implemented in `graph.py`, `service.py`, and `web.py`, but they still use client-credentials/app-only token flow.
+  - Current delegated Graph permissions are documented and configured: `User.Read`, `User.ReadBasic.All`, `Mail.Read`, `Mail.Send`, `Chat.Read`, `Chat.Create`, `ChatMessage.Send`, `Team.ReadBasic.All`, `Channel.ReadBasic.All`, `ChannelMessage.Read.All`, `ChannelMessage.Send`.
+  - Prior live smoke proved Outlook self-send works and Teams app-only probing was blocked; tracker now points to delegated redesign as the next action.
+  - Existing automated regression suite currently passes at 16 tests, but those tests still encode the app-only Graph model.
+- constraints:
+  - Must respect repository/app harness, current status artifact workflow, and delegated Graph design docs.
+  - Must not widen access beyond the signed-in operator's actual mailbox/chat/channel scope.
+  - Must support operator-attended MFA during business hours; unattended 24/7 Graph automation is out of scope.
+  - Must keep Jira/Confluence auth paths unchanged.
+- unknowns/open questions:
+  - Exact delegated auth UX shape to implement first (device-code flow is the leading candidate).
+  - Token cache persistence path and refresh behavior for operator-attended sessions.
+  - Whether to keep any app-only compatibility path during transition or fully replace it.
+- likely codebase touchpoints:
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/src/common_employee_runtime/graph.py`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/src/common_employee_runtime/service.py`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/src/common_employee_runtime/web.py`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/tests/test_runtime_service.py`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/auth-strategy.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/teams.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/outlook.md`

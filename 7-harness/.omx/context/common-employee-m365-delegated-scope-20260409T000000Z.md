@@ -1,0 +1,25 @@
+# Ralph Context Snapshot
+
+- task statement: Re-evaluate blocked delegated Graph history and identify which M365-related `common-employee` scope areas can realistically proceed under delegated permissions.
+- desired outcome: A clear delegated-feasibility matrix for Outlook/Teams scope areas, grounded in current docs, previous blocker evidence, and actual workflow requirements.
+- known facts/evidence:
+  - Phase 12 Graph messaging is the current app-only baseline.
+  - Phase 13 delegated Graph transition is documented as blocked due to repeated live browser callback failures (`AADSTS70008 invalid_grant`).
+  - M365-related functional requirements are spread across `docs/integrations/teams.md`, `docs/integrations/outlook.md`, `docs/agent-behaviors/communication.md`, `docs/agent-behaviors/human-in-the-loop.md`, and `docs/product-specs/ticket-lifecycle.md`.
+  - Current desired authority model is not “all app permissions” or “all delegated permissions”, but “use delegated where viable and only escalate to application permissions where delegated cannot satisfy the workflow.”
+  - Current granted Graph permissions are mostly delegated with `User.Read.All` as the only application permission.
+- constraints:
+  - Must distinguish between “spec requires this capability” and “current tenant/browser path has proven unstable.”
+  - Must not conflate auth-path blockers with feature-scope impossibility.
+  - Must align with the app persona: narrow common-service-planning scope, not broad organization-wide IT access.
+- unknowns/open questions:
+  - Which specific M365 tasks can be satisfied entirely within delegated scope given working-hours operator presence.
+  - Which tasks require application permissions or a different architectural pattern.
+- likely codebase touchpoints:
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/auth-strategy.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/teams.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/integrations/outlook.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/agent-behaviors/communication.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/agent-behaviors/human-in-the-loop.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/product-specs/ticket-lifecycle.md`
+  - `/Users/h0977/dev/backlog/7-harness/common-employee/docs/status/completed/2026-04-07-graph-delegated-review-report-lead.md`
