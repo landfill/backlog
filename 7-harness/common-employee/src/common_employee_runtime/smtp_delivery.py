@@ -98,7 +98,7 @@ class SMTPDeliveryClient:
                 if self.config.use_starttls:
                     smtp.starttls()
                 smtp.login(self.config.username, self.config.password)
-                smtp.sendmail(self.config.from_address, recipients, message.as_string())
+                smtp.send_message(message)
         except Exception as error:  # pragma: no cover
             raise SMTPDeliveryError(str(error)) from error
         return {"sent": True, "recipients": recipients, "subject": subject}

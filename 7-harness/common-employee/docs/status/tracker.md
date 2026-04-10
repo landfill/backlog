@@ -25,7 +25,7 @@
 - owner: Lead
 
 ## Next Action
-- next: implementation branch를 정리하고 후속으로 legacy `graph.py` 보관/정리 여부를 결정한다.
+- next: implementation branch를 정리하고 실제 SMTP/Teams 운영값 smoke를 별도 단계로 진행한다.
 
 ## Issues
-- historical Graph phase 기록과 `graph.py`는 남아 있지만 현재 활성 기준선은 Graph를 요구하지 않는다
+- historical Graph phase 기록은 남아 있지만 현재 활성 기준선은 Graph를 요구하지 않는다

@@ -35,7 +35,7 @@
 ## Cleanup
 - status: CLEAN
 - cleaned: active runtime/web/test Graph paths removed from the implementation slice, SMTP/webhook clients added, lifecycle Teams alerts now record success/failure evidence
-- remaining: legacy `graph.py` remains as historical residue only
+- remaining: none in the active implementation slice
 
 ## Open Risks
 - dashboard-triggered Outlook sends are only durably tied to a run when a `ticket_key` is supplied

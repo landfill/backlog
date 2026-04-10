@@ -17,8 +17,7 @@
 - Confluence config now supports `ATLASSIAN_CONFLUENCE_BASE_URL` so Jira와 Wiki 도메인이 달라도 실제 서비스로 동작한다
 
 ## Risks
-- historical `graph.py` remains in the repo as dead-code residue and may confuse future readers if not clearly treated as legacy
 - standalone dashboard smoke sends only create durable evidence when a `ticket_key` is supplied
 
 ## Next Step
-- branch/commit the implementation changes, and later decide whether to archive or remove legacy `graph.py`
+- branch/commit the implementation changes, and later run real SMTP/Teams smoke with production values

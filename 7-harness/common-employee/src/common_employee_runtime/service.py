@@ -934,31 +934,13 @@ class AutonomousRuntimeService:
         return value.lower().replace("_", "-")
 
     def _phase_metadata(self) -> dict[str, str]:
-        if self.confluence_client is not None:
-            return {
-                "phase": "phase-11-confluence-service",
-                "date_prefix": "2026-04-07",
-                "artifact_tag": "confluence-service",
-                "brief_label": "confluence service",
-                "title_prefix": "Confluence service run",
-                "completed_state_text": "The service processed a ticket and synchronized Confluence-aware reporting artifacts.",
-            }
-        if self.jira_client is not None:
-            return {
-                "phase": "phase-10-jira-service-delivery",
-                "date_prefix": "2026-04-06",
-                "artifact_tag": "jira-service",
-                "brief_label": "jira service",
-                "title_prefix": "Jira service run",
-                "completed_state_text": "The Jira-backed service processed an operational ticket end-to-end.",
-            }
         return {
-            "phase": "phase-8-autonomous-runtime-foundation",
-            "date_prefix": "2026-04-06",
-            "artifact_tag": "autonomous-runtime",
-            "brief_label": "autonomous runtime",
-            "title_prefix": "Autonomous runtime ticket run",
-            "completed_state_text": "The autonomous runtime processed an operational ticket end-to-end.",
+            "phase": "phase-14-m365-manual-delivery-realignment",
+            "date_prefix": "2026-04-10",
+            "artifact_tag": "m365-manual-delivery",
+            "brief_label": "m365 manual delivery",
+            "title_prefix": "M365 manual delivery run",
+            "completed_state_text": "The service processed a ticket using the SMTP + Teams webhook delivery baseline.",
         }
 
     def _artifact_relative_path(self, bucket: str, slug: str, artifact_name: str) -> str:
@@ -996,7 +978,8 @@ class AutonomousRuntimeService:
         )
 
     def _find_decision_log_path(self, ticket_key: str) -> Path | None:
-        for path in sorted(self.workspace.glob(f"docs/generated/decision-logs/**/*{ticket_key}.md")):
+        pattern = f"docs/generated/decision-logs/**/*-{ticket_key}.md"
+        for path in sorted(self.workspace.glob(pattern), reverse=True):
             if path.is_file():
                 return path
         return None

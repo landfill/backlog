@@ -132,12 +132,12 @@ class RuntimeServiceTests(unittest.TestCase):
 
             completed_brief = (
                 workspace
-                / "docs/status/completed/2026-04-06-ops-101-autonomous-runtime-task-brief.md"
+                / "docs/status/completed/2026-04-10-ops-101-m365-manual-delivery-task-brief.md"
             )
             self.assertTrue(completed_brief.exists())
 
             decision_log = (
-                workspace / "docs/generated/decision-logs/2026/04/2026-04-06-OPS-101.md"
+                workspace / "docs/generated/decision-logs/2026/04/2026-04-10-OPS-101.md"
             )
             self.assertTrue(decision_log.exists())
             self.assertIn("Reset the payroll sync worker", decision_log.read_text(encoding="utf-8"))
@@ -272,7 +272,7 @@ class RuntimeServiceTests(unittest.TestCase):
             self.assertEqual(result["state"], "completed")
 
             decision_log = (
-                workspace / "docs/generated/decision-logs/2026/04/2026-04-06-OPS-104.md"
+                workspace / "docs/generated/decision-logs/2026/04/2026-04-10-OPS-104.md"
             )
             decision_log_text = decision_log.read_text(encoding="utf-8")
             self.assertNotIn("ABC-123", decision_log_text)
@@ -400,11 +400,11 @@ class RuntimeServiceTests(unittest.TestCase):
                     self.assertIn("Run detail: OPS-301", detail_html)
                     self.assertIn("gate1", detail_html)
                     self.assertIn("APPROVED", detail_html)
-                    self.assertIn("docs/generated/decision-logs/2026/04/2026-04-06-OPS-301.md", detail_html)
+                    self.assertIn("docs/generated/decision-logs/2026/04/2026-04-10-OPS-301.md", detail_html)
 
                     artifact_html = request.urlopen(
                         f"http://127.0.0.1:{port}/artifacts?path="
-                        "docs%2Fgenerated%2Fdecision-logs%2F2026%2F04%2F2026-04-06-OPS-301.md"
+                        "docs%2Fgenerated%2Fdecision-logs%2F2026%2F04%2F2026-04-10-OPS-301.md"
                     ).read().decode("utf-8")
                     self.assertIn("Web console runtime smoke", artifact_html)
                     self.assertIn("Artifact", artifact_html)
@@ -900,6 +900,10 @@ class RuntimeServiceTests(unittest.TestCase):
 
             def sendmail(self, sender: str, recipients: list[str], message: str) -> None:
                 self.messages.append((sender, recipients, message))
+
+            def send_message(self, message) -> None:
+                recipients = [item.strip() for item in str(message["To"]).split(",") if item.strip()]
+                self.messages.append((str(message["From"]), recipients, message.as_string()))
 
         class FakeWebhookHandler(BaseHTTPRequestHandler):
             payloads: list[dict[str, object]] = []

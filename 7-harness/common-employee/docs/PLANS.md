@@ -198,7 +198,6 @@ Jira + Confluence-backed 단일 운영자 서비스를 Microsoft Graph 기반 Ou
 
 | 산출물 | 상태 |
 |---|---|
-| `src/common_employee_runtime/graph.py` | ✅ 추가 완료 |
 | `src/common_employee_runtime/service.py` | ✅ Graph manual send flow 추가 완료 |
 | `src/common_employee_runtime/web.py` | ✅ Outlook/Teams manual controls 추가 완료 |
 | `tests/test_runtime_service.py` | ✅ Graph 검증 추가 완료 |
