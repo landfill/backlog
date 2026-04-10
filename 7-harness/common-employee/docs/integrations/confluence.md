@@ -3,7 +3,28 @@
 ## 역할
 
 Confluence는 **지식 소스(읽기) + 보고 대상(쓰기)** 이중 역할을 한다.
-Analyst가 솔루션 탐색 시 위키를 검색하고, Reporter가 보고서를 페이지로 생성한다.
+Analyst가 솔루션 탐색 시 위키를 검색하고, Reporter/Executor가 보고서를 페이지로 생성 또는 갱신한다.
+
+## 현재 구현 상태
+
+- 현재 런타임은 **Atlassian Cloud + API Token Basic auth**를 기준으로 Confluence 읽기/쓰기 경로를 구현한다.
+- 구현 경로:
+  - `src/common_employee_runtime/confluence.py` — Confluence REST client
+  - `src/common_employee_runtime/service.py` — publish mode 및 page create/update flow
+  - `src/common_employee_runtime/web.py` — Confluence search/read/manual publish UI
+- 활성화 조건:
+  - `ATLASSIAN_BASE_URL`
+  - `ATLASSIAN_EMAIL`
+  - `ATLASSIAN_API_TOKEN`
+  - `ATLASSIAN_CONFLUENCE_SPACE`
+- 선택 설정:
+  - `ATLASSIAN_CONFLUENCE_PARENT_PAGE_ID`
+  - `ATLASSIAN_CONFLUENCE_PUBLISH_MODE=manual|immediate`
+
+현재 구현은 단일 운영자 환경을 기준으로 하며,
+기본 publish mode는 `manual`이다.
+즉시 발행은 웹 콘솔 또는 설정에서 `immediate`로 전환했을 때만 활성화된다.
+Confluence는 Jira와 같은 `ATLASSIAN_API_TOKEN`을 재사용한다.
 
 ## 사용 에이전트별 권한
 
@@ -23,47 +44,35 @@ Analyst가 솔루션 탐색 시 위키를 검색하고, Reporter가 보고서를
 
 **검색 전략:**
 
-1. **CQL 기반 검색**: 키워드 + 스페이스 제한
-
-```
-# 특정 스페이스에서 키워드 검색
-space = "OPS" AND text ~ "타임아웃 장애" ORDER BY lastModified DESC
-
-# 특정 레이블의 문서 검색
-space = "OPS" AND label = "runbook" AND text ~ "{keyword}"
-```
-
-2. **스페이스 제한**: 에이전트가 접근 가능한 스페이스를 미리 정의
+1. **제목 기반 검색**: 키워드 + space 제한
 
 ```yaml
-accessible_spaces:
-  knowledge:          # 지식 소스용 스페이스
-    - "OPS"           # 운영 위키
-    - "TECH"          # 기술 문서
-    - "GUIDE"         # 가이드/매뉴얼
-  reporting:          # 보고서 생성 대상 스페이스
-    - "REPORTS"       # 에이전트 보고서
-    - "PROJECT"       # 프로젝트 보고
+space_id: "ATLASSIAN_CONFLUENCE_SPACE"
+title_contains: "{keyword}"
+limit: 10
 ```
 
-> ⚠️ 실제 스페이스 키는 Phase 4에서 구체화한다.
+현재 구현 메모:
+- REST 경로: `GET /wiki/api/v2/pages`
+- query: `title`, `space-id`, `limit`
+- 웹 콘솔 dashboard에서 page title 검색 결과를 바로 노출한다.
 
-3. **검색 결과 처리**:
-   - 최대 10건/쿼리
-   - 결과에서 제목, 발췌, 최종 수정일, 작성자를 추출
-   - 관련도가 높은 페이지는 본문을 추가 조회
+2. **검색 결과 처리**
+- 최대 10건/쿼리
+- 결과에서 page id, 제목, 상태를 추출
+- 관련도가 높은 페이지는 본문을 추가 조회
 
 ### 페이지 본문 조회 (Analyst)
 
 **조회 대상**: 검색 결과에서 관련도 높은 페이지
 
 **추출 항목:**
-- 본문 텍스트 (HTML → 마크다운 변환)
-- 첨부 파일 목록
-- 하위 페이지 목록
-- 최종 수정일/작성자
+- 본문 storage value
+- page id / status / version
 
-**용량 제한**: 페이지당 본문 최대 50,000자까지 처리
+현재 구현 메모:
+- REST 경로: `GET /wiki/api/v2/pages/{pageId}`
+- query: `body-format=storage`
 
 ---
 
@@ -74,54 +83,49 @@ accessible_spaces:
 **생성 플로우:**
 
 ```
-[Reporter] 보고서 초안 작성 (마크다운)
+[Reporter] 보고서 초안 작성
   ↓
 [Guardian] Gate 3: 보고서 품질 검증
   ↓
-[Executor] Confluence 페이지 생성
+[Executor] Confluence 페이지 생성 또는 업데이트
 ```
 
 **페이지 구조 규칙:**
 
 | 항목 | 규칙 |
 |---|---|
-| 스페이스 | 보고서 전용 스페이스 |
-| 부모 페이지 | 보고서 유형별 부모 하위에 생성 |
-| 제목 형식 | `[유형] YYYY-MM-DD 보고서` |
-| 레이블 | `auto-generated`, 보고서 유형 태그 |
-| 본문 형식 | Confluence 저장소 형식 (XHTML) |
+| 스페이스 | `ATLASSIAN_CONFLUENCE_SPACE` |
+| 부모 페이지 | `ATLASSIAN_CONFLUENCE_PARENT_PAGE_ID`가 있으면 그 하위에 생성 |
+| 제목 형식 | 기본값: `{ticket_key} runtime report`, 웹 콘솔에서 override 가능 |
+| 본문 형식 | Confluence storage body |
+| 생성 소스 | 로컬 decision log 기반 redacted body |
 
-**부모 페이지 구조:**
+### Publish mode
 
-```
-보고서 루트
-├── 일별 보고
-│   ├── [일별] 2026-03-29 보고서
-│   └── ...
-├── 주별 보고
-│   ├── [주별] 2026-W13 보고서
-│   └── ...
-├── 프로젝트 보고
-│   ├── [JIRA-1234] 프로젝트 상태 보고
-│   └── ...
-└── 유관자 공유
-    └── ...
-```
+| 모드 | 동작 |
+|---|---|
+| `manual` | runtime 성공 후 발행 준비 상태만 남기고, 웹 콘솔의 `Publish to Confluence` 버튼으로 실제 발행 |
+| `immediate` | runtime 성공 직후 서비스가 페이지를 즉시 생성/업데이트 |
+
+현재 구현 메모:
+- 기본값은 `manual`
+- `manual`은 초기 운영 안전 모드
+- `immediate`는 자율 운영 전환 시 설정만으로 활성화할 수 있게 같은 서비스 계약을 유지한다
 
 ### 페이지 업데이트 (Executor)
 
 **업데이트 대상**: 기존 프로젝트 상태 보고서, 누적 문서
 
 **안전 규칙:**
-- 업데이트 전 현재 버전 번호 확인 (낙관적 잠금)
+- 업데이트 전 현재 버전 번호 확인
 - 충돌 발생 시 업데이트 중단 + Lead 보고
-- 기존 내용 삭제 금지 — 추가/수정만 허용
+- 기존 내용 삭제 금지
 - 수정 이력에 에이전트 식별자 포함
 
-### 댓글 작성 (Reporter)
-
-기존 페이지에 처리 결과나 업데이트를 댓글로 추가.
-페이지 본문 수정보다 안전한 방법으로, 경미한 업데이트에 사용.
+현재 구현 메모:
+- REST 경로: `PUT /wiki/api/v2/pages/{pageId}`
+- 요청에는 `version.number + 1`을 포함한다
+- 웹 콘솔 수동 발행 시 `page_id`, `version_number`를 같이 넣어 update 대상으로 지정할 수 있다
 
 ---
 
@@ -129,27 +133,10 @@ accessible_spaces:
 
 ### 원본 자료 수집 (Analyst)
 
-Phase 4에서 활성화. Confluence에서 매뉴얼성 자료를 추출하여 `raw/`에 저장.
+Phase 4에서 활성화. Confluence에서 매뉴얼성 자료를 추출하여 `raw/`에 저장한다.
 
-**수집 대상 식별:**
-- 특정 레이블이 붙은 페이지: `runbook`, `manual`, `guide`, `howto`
-- 특정 스페이스의 전체 페이지 목록
-- 최근 N개월 이내 수정된 문서
-
-**수집 프로세스:**
-```
-[Analyst] Confluence 검색 (레이블/스페이스 기반)
-  ↓
-[Analyst] 페이지 본문 추출 (HTML → 마크다운)
-  ↓
-[Analyst] raw/에 저장 + _intake-log.md 기록
-  ↓
-[Analyst] 구조화 정제 (제목, 절차, 조건, 예외 분리)
-  ↓
-[Guardian] 정제 품질 검증
-  ↓
-[Reporter] runbooks/ 또는 past-solutions/에 배치
-```
+현재 phase에서는 **live search/read와 report publish**까지만 구현하고,
+bulk raw-content ingestion은 후속 범위로 남긴다.
 
 ---
 
