@@ -13,8 +13,8 @@
 |---|---|---|
 | Jira | OAuth 2.0 또는 API Token | Bearer Token / Basic Auth |
 | Confluence | OAuth 2.0 또는 API Token | Bearer Token / Basic Auth |
-| Teams | Microsoft Graph API (OAuth 2.0) | Bearer Token |
-| Outlook | Microsoft Graph API (OAuth 2.0) | Bearer Token |
+| Teams | Incoming Webhook | Webhook Secret URL |
+| Outlook | SMTP Submission | SMTP Credential |
 
 ### Atlassian (Jira + Confluence)
 
@@ -29,9 +29,10 @@
 
 ### Microsoft (Teams + Outlook)
 
-- Microsoft Graph API 사용
-- Azure AD에 앱 등록 → Client Credentials 또는 Delegated 권한
-- 에이전트 전용 서비스 계정으로 인증
+- Teams는 고정 Incoming Webhook으로만 사용한다
+- Teams는 진행 상황에 대한 셀프 알림만 보내며, DM/응답 수신/채널 탐색은 현재 범위에서 제외한다
+- Outlook은 운영자가 UI에서 수신자를 직접 지정하고 발송 버튼을 눌렀을 때만 SMTP로 메일을 보낸다
+- 메일 수신 모니터링, 메일함 읽기, Graph 기반 Outlook/Teams 자동화는 현재 범위에서 제외한다
 
 ---
 
@@ -51,11 +52,21 @@ ATLASSIAN_BASE_URL=https://company.atlassian.net
 ATLASSIAN_EMAIL=agent@company.com
 ATLASSIAN_API_TOKEN=<시크릿 매니저에서 주입>
 ATLASSIAN_JIRA_POLL_JQL=assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC
+ATLASSIAN_CONFLUENCE_SPACE=<Confluence space id>
+ATLASSIAN_CONFLUENCE_PARENT_PAGE_ID=<Confluence parent page id, optional>
+ATLASSIAN_CONFLUENCE_PUBLISH_MODE=manual
 
-# Microsoft Graph
-MS_TENANT_ID=<Azure AD 테넌트>
-MS_CLIENT_ID=<앱 등록 클라이언트 ID>
-MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
+# Outlook SMTP
+SMTP_HOST=<SMTP 서버 호스트>
+SMTP_PORT=<SMTP 포트>
+SMTP_USERNAME=<SMTP 계정>
+SMTP_PASSWORD=<시크릿 매니저에서 주입>
+SMTP_FROM_ADDRESS=<기본 발신 주소>
+SMTP_FROM_NAME=<기본 발신 이름, optional>
+SMTP_USE_STARTTLS=<true|false>
+
+# Teams Webhook
+TEAMS_PROGRESS_WEBHOOK_URL=<진행 알림용 Teams Incoming Webhook URL>
 ```
 
 ### `.env` 파일 사용
@@ -82,6 +93,10 @@ MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
 
 > 구현 단계에서 인프라 환경에 맞게 확정한다.
 > 현재 Jira Cloud 실구현은 위 Atlassian 값 3개가 있어야 활성화된다.
+> 현재 Confluence 실구현은 `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`, `ATLASSIAN_CONFLUENCE_SPACE`가 있어야 활성화된다.
+> 현재 기준선은 Outlook SMTP 수동 발송과 Teams 웹훅 셀프 알림이다.
+> Outlook 발송에는 SMTP 자격 증명이 필요하고, Teams 진행 알림에는 `TEAMS_PROGRESS_WEBHOOK_URL`이 필요하다.
+> 메일 수신 모니터링, Teams 양방향 응답 수집, Graph 기반 권한 모델은 현재 baseline에 포함되지 않는다.
 > 값은 환경 변수 또는 `common-employee/.env` 중 하나로 제공할 수 있다.
 
 ---
@@ -117,19 +132,18 @@ MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
 - Space Administration
 - 지식 소스 스페이스 쓰기 (읽기만)
 
-### Microsoft Graph 권한
+### Outlook SMTP / Teams Webhook 권한
 
-| 권한 | 유형 | 이유 |
-|---|---|---|
-| Chat.ReadWrite | Application | Teams 메시지 발송/읽기 |
-| ChannelMessage.Send | Application | 채널 메시지 발송 |
-| Mail.Send | Application | Outlook 메일 발송 |
-| Mail.Read | Application | 수신 메일 모니터링 |
+| 연동 | 자격 증명 / 권한 | 범위 | 이유 |
+|---|---|---|---|
+| Outlook SMTP | SMTP 발송 계정 | 발송만, 메일 읽기 없음 | 운영자 UI에서 직접 지정한 수신자에게 메일 발송 |
+| Teams Webhook | Incoming Webhook URL | 고정 채널 1곳 또는 허용된 소수 채널 | 진행 상황 셀프 알림 |
 
 **제외 권한:**
-- Calendar (일정 접근 불필요)
-- Files (파일 접근 불필요)
-- User.ReadWrite (사용자 정보 수정 불필요)
+- Microsoft Graph application / delegated mail 권한
+- 메일함 읽기 권한
+- Teams DM / 채널 탐색 / 응답 수집 권한
+- Calendar, Files, User.ReadWrite 같은 비관련 권한
 
 ---
 
@@ -138,13 +152,13 @@ MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
 | 시스템 | 갱신 방식 | 만료 주기 |
 |---|---|---|
 | Atlassian API Token | 수동 갱신 (만료 없음, 주기적 교체 권장) | 90일마다 교체 권장 |
-| Microsoft OAuth | 자동 갱신 (refresh token) | access token: 1시간, refresh token: 90일 |
+| Outlook SMTP / Teams Webhook | 장기 자격 증명 또는 시크릿 교체 | 운영 정책 기준 |
 
 ### 만료 감지
 
-- API 호출 시 401 응답 → 토큰 갱신 시도
-- 갱신 실패 → Lead에 보고 + 관련 작업 일시 중단
-- 의사결정 로그에 "인증 만료로 처리 지연" 기록
+- 인증 실패 또는 시크릿 오류 발생 시 → Lead에 보고 + 관련 작업 일시 중단
+- SMTP 로그인 실패나 웹훅 401/403/404는 자동 권한 상승 없이 설정 오류로 다룬다
+- 의사결정 로그에 "인증/시크릿 오류로 처리 지연" 기록
 
 ---
 
@@ -154,7 +168,7 @@ MS_CLIENT_SECRET=<시크릿 매니저에서 주입>
 
 | 항목 | 주기 | 담당 |
 |---|---|---|
-| 서비스 계정 권한 검토 | 분기 1회 | 사람 (보안 담당) |
+| 서비스 계정/SMTP/Webhook 시크릿 검토 | 분기 1회 | 사람 (보안 담당) |
 | API 토큰 교체 | 90일마다 | 사람 (인프라 담당) |
 | 접근 로그 검토 | 월 1회 | Guardian (자동) + 사람 (검토) |
 | 불필요 권한 제거 | 분기 1회 | 사람 (보안 담당) |

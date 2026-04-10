@@ -168,9 +168,14 @@
 - 의사결정 로그 작성 (decision-logging 스키마에 따라)
 - 일별/주별 보고서 생성
 - 유관자/팀 리더 대상 보고서 작성
-- Confluence 보고 페이지 생성 및 업데이트
+- Confluence/Jira/Teams/Outlook에 실릴 보고 내용 초안 작성
 - 보고서 템플릿 관리 및 개선
 - 지식 베이스 업데이트 제안 문서화
+
+**역할 경계:**
+- Reporter는 보고 내용과 산출물의 작성 책임을 가진다.
+- 외부 publish/send transport는 직접 수행하지 않고 Executor 또는 운영자에게 handoff한다.
+- Outlook SMTP의 실제 발송은 운영자만 수행한다.
 
 **보고서 + 템플릿을 통합하는 이유:**
 - 보고서를 작성하는 에이전트가 템플릿의 문제점을 가장 잘 안다

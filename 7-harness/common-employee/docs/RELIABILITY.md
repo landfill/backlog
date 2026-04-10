@@ -73,10 +73,15 @@ repository-level `harness/core/docs/repository-reliability.md`를
 ## 외부 쓰기 안전 규칙
 
 - Executor는 쓰기 전에 대상, 의도한 결과, 선행 승인 여부를 기록한다.
-- Jira 상태 전환, 댓글 작성, Confluence 페이지 발행, Teams/Outlook 발송은
+- Jira 상태 전환, 댓글 작성, Confluence 페이지 발행, Teams 웹훅 발송은
   모두 실행 결과를 evidence로 남긴다.
+- Outlook SMTP는 `초안/발송 준비`와 `운영자 실제 발송`을 별도 단계로 기록한다.
+- Outlook 메일이 운영자 액션 대기 상태이면 외부 쓰기 완료로 간주하지 않는다.
+- 운영자 수동 발송 결과를 즉시 관측할 수 없으면 `prepared` 상태와 후속 확인 필요성을 evidence에 남긴다.
 - 동일 메시지/댓글을 재발송할 때는 기존 발송 여부를 먼저 확인한다.
 - 여러 시스템에 걸친 연쇄 쓰기는 부분 성공 가능성을 기본 가정으로 다룬다.
+- Confluence 페이지 업데이트는 현재 page id/version을 확인한 뒤에만 수행한다.
+- `manual` publish mode를 기본값으로 두고, `immediate`는 명시 설정일 때만 수행한다.
 
 ## 체크포인트와 복구
 
@@ -102,6 +107,9 @@ repository-level `harness/core/docs/repository-reliability.md`를
 - artifact viewer는 허용 경로만 열고, 잘못된 경로는 차단 응답을 반환해야 한다.
 - Jira issue fetch/search/process도 동일한 runtime service 계약을 재사용해야 한다.
 - Jira transition은 실행 직전 조회한 available transition 목록 기준으로만 수행해야 한다.
+- Confluence 발행은 runtime 성공 이후에만 실행해야 한다.
+- `manual` mode에서는 publish-ready evidence만 남기고, 실제 발행은 명시적 버튼 액션으로 수행해야 한다.
+- Confluence update는 page id/version이 주어졌을 때만 update 경로로 들어가야 한다.
 
 ## 차단 조건
 

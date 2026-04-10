@@ -22,7 +22,7 @@
 | 신뢰성 기준 | `docs/RELIABILITY.md` | retry, rollback, 상태 복구 기준이 명시됐는가 |
 | 데이터 흐름 | `docs/design-docs/data-flow.md` | 상태 산출물, LLM 입력, 외부 공유의 데이터 경계가 잠겼는가 |
 | 설계 고정 기준 | `docs/design-docs/design-freeze-matrix.md` | 구현 전 필수 설계와 병행/후속 보완 문서가 구분됐는가 |
-| 인증 전략 | `docs/integrations/auth-strategy.md` | 서비스 계정, least privilege, 감사 기준이 정리됐는가 |
+| 인증 전략 | `docs/integrations/auth-strategy.md` | 서비스 계정과 SMTP/Webhook 시크릿, least privilege, 감사 기준이 정리됐는가 |
 | 상태 산출물 | `docs/status/README.md` | task brief, tracker, ongoing plan, review report 위치가 정해졌는가 |
 | 현재 상태 | `docs/status/tracker.md` | 현재 phase, verdict, next action이 최신인가 |
 | 남은 공백 | `docs/PLANS.md` | backlog가 의도적 공백으로 기록돼 있는가 |

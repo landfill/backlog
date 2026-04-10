@@ -38,10 +38,12 @@ repository-level `harness/core/docs/repository-security.md`를
 
 ## V1 보안 결정
 
-### 1. 서비스 계정 원칙
+### 1. 연동 자격 증명 원칙
 
-- Jira, Confluence, Teams, Outlook 연동은 개인 계정이 아니라 서비스 계정만 사용한다.
-- 서비스 계정 권한은 `docs/integrations/auth-strategy.md`의 least privilege 표를 기준으로 한다.
+- Jira, Confluence 연동은 서비스 계정을 사용한다.
+- Outlook 발송은 메일 읽기 권한 없는 SMTP 발송 자격 증명만 사용하고, 실제 발송은 운영자 UI 액션으로만 수행한다.
+- Teams 연동은 고정 웹훅 URL만 사용하며, 양방향 채팅/DM/API 토큰 기반 연동을 사용하지 않는다.
+- 각 자격 증명과 시크릿은 `docs/integrations/auth-strategy.md`의 기준과 least privilege 표를 따른다.
 - 개발/검증/운영 환경은 자격 증명을 분리한다.
 
 ### 2. 역할 기반 권한 분리
@@ -65,6 +67,7 @@ repository-level `harness/core/docs/repository-security.md`를
 ### 4. 외부 공유 최소화
 
 - Teams, Outlook, Jira 댓글에는 처리 결과와 필요한 근거만 보낸다.
+- Confluence 페이지 본문은 로컬 redacted artifact에서 생성한 요약/로그만 사용한다.
 - 민감 정보, 내부 토큰, 전체 첨부 내용, 내부 운영 세부 절차는 외부 공유 메시지에 넣지 않는다.
 - 링크 공유가 가능한 경우 본문 복제보다 링크를 우선한다.
 
@@ -75,6 +78,8 @@ repository-level `harness/core/docs/repository-security.md`를
 - 워크스페이스 밖 경로, DB 원시 내용, redaction 전 민감 본문은 브라우저에 직접 노출하지 않는다.
 - 브라우저에서 제출하는 intake payload도 기존 runtime redaction 규칙과 동일한 기준을 따른다.
 - Jira Cloud 자격 증명은 환경 변수로만 주입하고 UI에 노출하지 않는다.
+- Confluence 발행 본문도 raw ticket payload가 아니라 redacted local artifact에서만 생성한다.
+- 기본 publish mode는 `manual`로 두고, `immediate` 전환은 운영자가 명시적으로 설정할 때만 허용한다.
 
 ## 허용 / 금지 데이터 흐름
 
@@ -92,6 +97,7 @@ repository-level `harness/core/docs/repository-security.md`를
 | generated artifact → 로컬 웹 콘솔 | 허용 | `docs/status/*`, `docs/generated/decision-logs/*` 하위의 redacted/generated 파일만 허용 |
 | 워크스페이스 밖 파일 → 로컬 웹 콘솔 | 금지 | 경로 탐색/원시 파일 노출 금지 |
 | Jira issue 본문 → 로컬 artifact | 조건부 허용 | 평탄화/요약 후 최소 범위만 허용, 원문 전체 복제 금지 |
+| redacted decision log → Confluence page body | 허용 | `manual` 기본값 유지, 즉시 발행은 opt-in, 민감 원문 복제 금지 |
 
 ## 인증 / 자격 증명 규칙
 
@@ -106,7 +112,7 @@ Guardian은 실행 결과 검증 시 최소한 아래를 확인한다.
 
 - 외부 쓰기 대상이 승인된 시스템과 리소스 범위 안에 있는가
 - 실행 로그나 보고서에 민감 정보가 그대로 남지 않았는가
-- 서비스 계정 권한을 넘어서는 액션이 시도되지 않았는가
+- 정의된 자격 증명 범위를 넘어서는 액션이 시도되지 않았는가
 - 원문 복제가 필요한 경우 저장 이유와 경로가 남아 있는가
 - 의도하지 않은 부가 변경이 없는가
 - 다음 단계가 이어받을 때 민감 정보가 과도하게 노출되지 않는가
