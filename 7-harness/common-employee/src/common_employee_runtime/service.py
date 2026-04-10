@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from html import escape as html_escape
 from pathlib import Path
 import re
 
+from .confluence import ConfluenceClient, ConfluenceConfig
 from .jira import JiraClient, JiraIssue
 from .models import CleanupStatus, GateRecord, Verdict
+from .smtp_delivery import SMTPDeliveryClient
 from .store import RuntimeStore
+from .teams_webhook import TeamsWebhookClient
 
 
 DEFAULT_NOW = datetime(2026, 4, 6, 9, 0, 0)
@@ -28,12 +32,30 @@ class TicketContext:
 
 
 class AutonomousRuntimeService:
-    def __init__(self, workspace: Path, *, jira_client: JiraClient | None = None) -> None:
+    def __init__(
+        self,
+        workspace: Path,
+        *,
+        jira_client: JiraClient | None = None,
+        confluence_client: ConfluenceClient | None = None,
+        smtp_client: SMTPDeliveryClient | None = None,
+        teams_webhook_client: TeamsWebhookClient | None = None,
+    ) -> None:
         self.workspace = Path(workspace)
         self.store = RuntimeStore(self.workspace)
         self.jira_client = jira_client or JiraClient.from_workspace(self.workspace)
+        self.confluence_client = confluence_client or ConfluenceClient.from_workspace(self.workspace)
+        self.smtp_client = smtp_client or SMTPDeliveryClient.from_workspace(self.workspace)
+        self.teams_webhook_client = teams_webhook_client or TeamsWebhookClient.from_workspace(self.workspace)
 
-    def process_ticket(self, payload: dict[str, object]) -> dict[str, object]:
+    def process_ticket(
+        self,
+        payload: dict[str, object],
+        *,
+        confluence_publish_mode: str | None = None,
+        confluence_page_id: str | None = None,
+        confluence_page_title: str | None = None,
+    ) -> dict[str, object]:
         now = DEFAULT_NOW
         ticket = self._build_ticket(payload["ticket"])
         knowledge = payload.get("knowledge", {})
@@ -61,6 +83,7 @@ class AutonomousRuntimeService:
             next_owner="Analyst",
             next_step="Analyze the ticket and prepare gate evidence.",
         )
+        self._emit_teams_runtime_alert(ticket, state="started", detail="Runtime work package initialized.")
 
         gate1 = self._run_gate1(ticket, knowledge)
         gate_results["gate1"] = gate1.verdict.value
@@ -147,12 +170,12 @@ class AutonomousRuntimeService:
         )
         self._archive_completed_artifacts(ticket, slug)
         self._write_tracker(
-            phase="phase-8-autonomous-runtime-foundation",
+            phase=self._phase_metadata()["phase"],
             status="completed",
             owner="Lead",
-            state_text="The autonomous runtime processed an operational ticket end-to-end.",
-            title=f"Autonomous runtime ticket run: {ticket.key}",
-            path=f"docs/status/completed/2026-04-06-{slug}-autonomous-runtime-task-brief.md",
+            state_text=self._phase_metadata()["completed_state_text"],
+            title=f"{self._phase_metadata()['title_prefix']}: {ticket.key}",
+            path=self._artifact_relative_path("completed", slug, "task-brief"),
             verdict="APPROVED",
             attempts=attempts,
             evidence="Runtime state, gate reports, and decision log were generated from one service run.",
@@ -177,7 +200,8 @@ class AutonomousRuntimeService:
             payload={"decision_log": str(decision_log_path)},
             created_at=now.isoformat(),
         )
-        return {
+        self._emit_teams_runtime_alert(ticket, state="completed", detail="All gates passed and artifacts were synchronized.")
+        result = {
             "ticket_key": ticket.key,
             "state": state,
             "current_stage": current_stage,
@@ -188,6 +212,39 @@ class AutonomousRuntimeService:
             "database_path": str(self.store.db_path),
             "decision_log_path": str(decision_log_path),
         }
+        publish_mode = self._resolve_confluence_publish_mode(confluence_publish_mode)
+        if self.confluence_client is not None:
+            confluence_sync = self._build_confluence_sync_stub(ticket.key, publish_mode)
+            if publish_mode == "immediate":
+                try:
+                    confluence_sync = {
+                        "mode": publish_mode,
+                        "ready": True,
+                        **self.publish_run_to_confluence(
+                            ticket.key,
+                            page_id=confluence_page_id,
+                            page_title=confluence_page_title,
+                        ),
+                    }
+                except Exception as error:
+                    confluence_sync["error"] = str(error)
+                    self.store.append_event(
+                        ticket_key=ticket.key,
+                        stage="confluence-publish-failed",
+                        verdict=Verdict.CHANGES_REQUESTED.value,
+                        payload={"mode": publish_mode, "error": str(error)},
+                        created_at=now.isoformat(),
+                    )
+            else:
+                self.store.append_event(
+                    ticket_key=ticket.key,
+                    stage="confluence-ready",
+                    verdict=Verdict.APPROVED.value,
+                    payload={"mode": publish_mode, "ready": True},
+                    created_at=now.isoformat(),
+                )
+            result["confluence_sync"] = confluence_sync
+        return result
 
     def process_jira_issue(
         self,
@@ -197,6 +254,9 @@ class AutonomousRuntimeService:
         actions: list[dict[str, object]] | None = None,
         comment_on_complete: bool = True,
         transition_on_complete: str | None = None,
+        confluence_publish_mode: str | None = None,
+        confluence_page_id: str | None = None,
+        confluence_page_title: str | None = None,
     ) -> dict[str, object]:
         if self.jira_client is None:
             raise RuntimeError("Jira client is not configured in the environment.")
@@ -206,7 +266,10 @@ class AutonomousRuntimeService:
                 "ticket": self._ticket_payload_from_jira(issue),
                 "knowledge": knowledge or {},
                 "actions": actions or [],
-            }
+            },
+            confluence_publish_mode=confluence_publish_mode,
+            confluence_page_id=confluence_page_id,
+            confluence_page_title=confluence_page_title,
         )
         jira_sync: dict[str, object] = {"issue_key": issue.key, "commented": False, "transitioned": False}
         if comment_on_complete:
@@ -220,8 +283,124 @@ class AutonomousRuntimeService:
         result["jira_sync"] = jira_sync
         return result
 
+    def list_confluence_pages(self, *, title: str, limit: int = 10) -> list[dict[str, object]]:
+        if self.confluence_client is None or not title.strip():
+            return []
+        try:
+            return self.confluence_client.search_pages(title=title, limit=limit)
+        except Exception:
+            return []
+
+    def get_confluence_page(self, page_id: str) -> dict[str, object]:
+        if self.confluence_client is None:
+            raise RuntimeError("Confluence client is not configured in the environment.")
+        return self.confluence_client.get_page(page_id)
+
+    def publish_run_to_confluence(
+        self,
+        ticket_key: str,
+        *,
+        page_id: str | None = None,
+        page_title: str | None = None,
+        version_number: int | None = None,
+    ) -> dict[str, object]:
+        if self.confluence_client is None:
+            raise RuntimeError("Confluence client is not configured in the environment.")
+        run = self.store.get_run(ticket_key)
+        if run is None:
+            raise RuntimeError(f"Run `{ticket_key}` does not exist.")
+        body_storage = self._build_confluence_body(ticket_key)
+        title = page_title or f"{ticket_key} runtime report"
+        if page_id:
+            current_version = version_number
+            if current_version is None:
+                page = self.confluence_client.get_page(page_id)
+                current_version = int(dict(page.get("version", {})).get("number", 1))
+            self.confluence_client.update_page(
+                page_id,
+                title,
+                body_storage,
+                version_number=current_version,
+            )
+            published_page_id = page_id
+            published_version = current_version + 1
+            action = "updated"
+        else:
+            created = self.confluence_client.create_page(title, body_storage)
+            published_page_id = str(created.get("id", ""))
+            published_version = int(dict(created.get("version", {})).get("number", 1))
+            action = "created"
+        self.store.append_event(
+            ticket_key=ticket_key,
+            stage="confluence-publish",
+            verdict=Verdict.APPROVED.value,
+            payload={
+                "action": action,
+                "page_id": published_page_id,
+                "page_title": title,
+                "version_number": published_version,
+            },
+            created_at=DEFAULT_NOW.isoformat(),
+        )
+        return {
+            "published": True,
+            "page_id": published_page_id,
+            "page_title": title,
+            "version_number": published_version,
+        }
+
+    def send_outlook_message(
+        self,
+        recipients: list[str],
+        *,
+        subject: str,
+        html_body: str,
+        ticket_key: str | None = None,
+    ) -> dict[str, object]:
+        if self.smtp_client is None:
+            raise RuntimeError("SMTP delivery client is not configured in the environment.")
+        created_at = DEFAULT_NOW.isoformat()
+        if ticket_key:
+            self.store.append_event(
+                ticket_key=ticket_key,
+                stage="outlook-prepared",
+                verdict=Verdict.APPROVED.value,
+                payload={"recipients": recipients, "subject": subject},
+                created_at=created_at,
+            )
+        try:
+            result = self.smtp_client.send_message(recipients=recipients, subject=subject, html_body=html_body)
+        except Exception as error:
+            if ticket_key:
+                self.store.append_event(
+                    ticket_key=ticket_key,
+                    stage="outlook-send-failed",
+                    verdict=Verdict.BLOCKED.value,
+                    payload={"recipients": recipients, "subject": subject, "error": str(error)},
+                    created_at=created_at,
+                )
+            raise
+        if ticket_key:
+            self.store.append_event(
+                ticket_key=ticket_key,
+                stage="outlook-sent",
+                verdict=Verdict.APPROVED.value,
+                payload={"recipients": recipients, "subject": subject},
+                created_at=created_at,
+            )
+        return result
+
+    def send_teams_message(self, message_text: str) -> dict[str, object]:
+        if self.teams_webhook_client is None:
+            raise RuntimeError("Teams webhook client is not configured in the environment.")
+        return self.teams_webhook_client.send_message(message_text)
+
     def list_jira_issues(self, *, jql: str | None = None, max_results: int = 10) -> list[dict[str, object]]:
         if self.jira_client is None:
+            return []
+        try:
+            issues = self.jira_client.search_issues(jql=jql, max_results=max_results)
+        except Exception:
             return []
         return [
             {
@@ -232,7 +411,7 @@ class AutonomousRuntimeService:
                 "priority": issue.priority,
                 "project": issue.project,
             }
-            for issue in self.jira_client.search_issues(jql=jql, max_results=max_results)
+            for issue in issues
         ]
 
     def get_jira_issue_payload(self, issue_key: str) -> dict[str, object]:
@@ -420,8 +599,9 @@ class AutonomousRuntimeService:
         )
 
     def _write_task_brief(self, ticket: TicketContext, classification: str, slug: str) -> None:
+        metadata = self._phase_metadata()
         content = (
-            f"# {ticket.key} autonomous runtime kickoff\n\n"
+            f"# {ticket.key} {metadata['brief_label']} kickoff\n\n"
             "## Goal\n"
             f"- Process `{ticket.key}` through the autonomous runtime service.\n\n"
             "## Primary Output\n"
@@ -444,7 +624,7 @@ class AutonomousRuntimeService:
             "## Risk Notes\n"
             "- none\n"
         )
-        path = self.workspace / f"docs/status/ongoing/2026-04-06-{slug}-autonomous-runtime-task-brief.md"
+        path = self.workspace / self._artifact_relative_path("ongoing", slug, "task-brief")
         self._write_text(path, content)
 
     def _write_ongoing_plan(
@@ -461,8 +641,9 @@ class AutonomousRuntimeService:
         next_owner: str,
         next_step: str,
     ) -> None:
+        metadata = self._phase_metadata()
         content = (
-            f"# {ticket.key} autonomous runtime kickoff\n\n"
+            f"# {ticket.key} {metadata['brief_label']} kickoff\n\n"
             "## Goal\n"
             "- Run the documented operational ticket lifecycle in the service.\n\n"
             "## Scope\n"
@@ -491,7 +672,7 @@ class AutonomousRuntimeService:
             "## Issues\n"
             "- none\n"
         )
-        path = self.workspace / f"docs/status/ongoing/2026-04-06-{slug}-autonomous-runtime-ongoing-plan.md"
+        path = self.workspace / self._artifact_relative_path("ongoing", slug, "ongoing-plan")
         self._write_text(path, content)
 
     def _write_review_report(
@@ -503,6 +684,7 @@ class AutonomousRuntimeService:
         next_owner: str,
         next_step: str,
     ) -> None:
+        metadata = self._phase_metadata()
         content = (
             f"# {ticket.key} {stage_slug}\n\n"
             "## Verdict\n"
@@ -530,7 +712,7 @@ class AutonomousRuntimeService:
             "## Next Step\n"
             f"- {next_step}\n"
         )
-        path = self.workspace / f"docs/status/ongoing/2026-04-06-{slug}-review-report-{stage_slug}.md"
+        path = self.workspace / f"docs/status/ongoing/{metadata['date_prefix']}-{slug}-review-report-{stage_slug}.md"
         self._write_text(path, content)
 
     def _write_decision_log(
@@ -542,6 +724,7 @@ class AutonomousRuntimeService:
         execution_evidence: list[str],
         gate_results: dict[str, str],
     ) -> Path:
+        metadata = self._phase_metadata()
         info = dict(knowledge)
         content = (
             f"# {ticket.key}: {ticket.summary}\n\n"
@@ -572,11 +755,12 @@ class AutonomousRuntimeService:
             "- 새 패턴 발견: 없음\n"
             "- 매뉴얼 업데이트 필요: 없음\n"
         )
-        path = self.workspace / "docs/generated/decision-logs/2026/04" / f"2026-04-06-{ticket.key}.md"
+        path = self.workspace / "docs/generated/decision-logs/2026/04" / f"{metadata['date_prefix']}-{ticket.key}.md"
         self._write_text(path, content)
         return path
 
     def _archive_completed_artifacts(self, ticket: TicketContext, slug: str) -> None:
+        metadata = self._phase_metadata()
         names = [
             ("task-brief", "task-brief"),
             ("ongoing-plan", "ongoing-plan"),
@@ -585,12 +769,12 @@ class AutonomousRuntimeService:
             ("review-report-guardian-gate3", "review-report-guardian-gate3"),
         ]
         for source_name, target_name in names:
-            source = self.workspace / f"docs/status/ongoing/2026-04-06-{slug}-autonomous-runtime-{source_name}.md"
+            source = self.workspace / f"docs/status/ongoing/{metadata['date_prefix']}-{slug}-{metadata['artifact_tag']}-{source_name}.md"
             if "review-report" in source_name:
-                source = self.workspace / f"docs/status/ongoing/2026-04-06-{slug}-{source_name}.md"
-                target = self.workspace / f"docs/status/completed/2026-04-06-{slug}-{target_name}.md"
+                source = self.workspace / f"docs/status/ongoing/{metadata['date_prefix']}-{slug}-{source_name}.md"
+                target = self.workspace / f"docs/status/completed/{metadata['date_prefix']}-{slug}-{target_name}.md"
             else:
-                target = self.workspace / f"docs/status/completed/2026-04-06-{slug}-autonomous-runtime-{target_name}.md"
+                target = self.workspace / f"docs/status/completed/{metadata['date_prefix']}-{slug}-{metadata['artifact_tag']}-{target_name}.md"
             if source.exists():
                 self._write_text(target, source.read_text(encoding="utf-8"))
 
@@ -665,12 +849,12 @@ class AutonomousRuntimeService:
             tracker_state_text = f"{reason} Rollback candidate recorded after repeated root cause."
             next_action = "Shrink scope or restore the last safe checkpoint before another attempt."
         self._write_tracker(
-            phase="phase-8-autonomous-runtime-foundation",
+            phase=self._phase_metadata()["phase"],
             status=tracker_status,
             owner="Guardian",
             state_text=tracker_state_text,
-            title="Autonomous runtime foundation",
-            path=f"docs/status/ongoing/2026-04-06-{self._slug(ticket.key)}-autonomous-runtime-ongoing-plan.md",
+            title=self._phase_metadata()["title_prefix"],
+            path=self._artifact_relative_path("ongoing", self._slug(ticket.key), "ongoing-plan"),
             verdict=tracker_verdict,
             attempts=attempts,
             evidence=reason,
@@ -695,6 +879,7 @@ class AutonomousRuntimeService:
             payload={"reason": reason, "rollback_candidate": rollback_candidate},
             created_at=updated_at,
         )
+        self._emit_teams_runtime_alert(ticket, state=state, detail=reason)
         return {
             "ticket_key": ticket.key,
             "state": state,
@@ -719,12 +904,85 @@ class AutonomousRuntimeService:
             redacted = re.sub(pattern, "[REDACTED]", redacted, flags=re.IGNORECASE)
         return redacted
 
+    def _emit_teams_runtime_alert(self, ticket: TicketContext, *, state: str, detail: str) -> None:
+        if self.teams_webhook_client is None:
+            return
+        normalized_state = state.replace("_", " ")
+        message = f"[🤖 팀원에이전트] {ticket.key} {normalized_state}: {ticket.summary} — {detail}"
+        if len(message) > 500:
+            message = message[:497] + "..."
+        try:
+            self.teams_webhook_client.send_message(message)
+            self.store.append_event(
+                ticket_key=ticket.key,
+                stage=f"teams-webhook-{state}",
+                verdict=Verdict.APPROVED.value,
+                payload={"message": message},
+                created_at=DEFAULT_NOW.isoformat(),
+            )
+        except Exception as error:
+            self.store.append_event(
+                ticket_key=ticket.key,
+                stage="teams-webhook-failed",
+                verdict=Verdict.BLOCKED.value,
+                payload={"state": state, "message": message, "error": str(error)},
+                created_at=DEFAULT_NOW.isoformat(),
+            )
+            return
+
     def _slug(self, value: str) -> str:
         return value.lower().replace("_", "-")
+
+    def _phase_metadata(self) -> dict[str, str]:
+        return {
+            "phase": "phase-14-m365-manual-delivery-realignment",
+            "date_prefix": "2026-04-10",
+            "artifact_tag": "m365-manual-delivery",
+            "brief_label": "m365 manual delivery",
+            "title_prefix": "M365 manual delivery run",
+            "completed_state_text": "The service processed a ticket using the SMTP + Teams webhook delivery baseline.",
+        }
+
+    def _artifact_relative_path(self, bucket: str, slug: str, artifact_name: str) -> str:
+        metadata = self._phase_metadata()
+        return f"docs/status/{bucket}/{metadata['date_prefix']}-{slug}-{metadata['artifact_tag']}-{artifact_name}.md"
 
     def _write_text(self, path: Path, content: str) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
+
+    def _resolve_confluence_publish_mode(self, explicit_mode: str | None) -> str:
+        if explicit_mode:
+            return ConfluenceConfig.normalize_publish_mode(explicit_mode)
+        if self.confluence_client is None:
+            return ConfluenceConfig.normalize_publish_mode(None)
+        return self.confluence_client.config.publish_mode
+
+    def _build_confluence_sync_stub(self, ticket_key: str, mode: str) -> dict[str, object]:
+        return {
+            "ticket_key": ticket_key,
+            "mode": mode,
+            "ready": True,
+            "published": False,
+        }
+
+    def _build_confluence_body(self, ticket_key: str) -> str:
+        decision_log_path = self._find_decision_log_path(ticket_key)
+        if decision_log_path is None:
+            raise RuntimeError(f"Decision log for `{ticket_key}` does not exist.")
+        content = decision_log_path.read_text(encoding="utf-8")
+        return (
+            "<p>Generated by common-employee runtime.</p>"
+            f"<p>Ticket: <strong>{html_escape(ticket_key)}</strong></p>"
+            f"<pre>{html_escape(content)}</pre>"
+        )
+
+    def _find_decision_log_path(self, ticket_key: str) -> Path | None:
+        pattern = f"docs/generated/decision-logs/**/*-{ticket_key}.md"
+        for path in sorted(self.workspace.glob(pattern), reverse=True):
+            if path.is_file():
+                return path
+        return None
 
     def _build_jira_comment(self, result: dict[str, object]) -> str:
         gate_results = dict(result.get("gate_results", {}))

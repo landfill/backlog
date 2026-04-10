@@ -52,6 +52,7 @@ ATLASSIAN_BASE_URL=https://company.atlassian.net
 ATLASSIAN_EMAIL=agent@company.com
 ATLASSIAN_API_TOKEN=<시크릿 매니저에서 주입>
 ATLASSIAN_JIRA_POLL_JQL=assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC
+ATLASSIAN_CONFLUENCE_BASE_URL=https://company-wiki.atlassian.net
 ATLASSIAN_CONFLUENCE_SPACE=<Confluence space id>
 ATLASSIAN_CONFLUENCE_PARENT_PAGE_ID=<Confluence parent page id, optional>
 ATLASSIAN_CONFLUENCE_PUBLISH_MODE=manual
@@ -93,7 +94,7 @@ TEAMS_PROGRESS_WEBHOOK_URL=<진행 알림용 Teams Incoming Webhook URL>
 
 > 구현 단계에서 인프라 환경에 맞게 확정한다.
 > 현재 Jira Cloud 실구현은 위 Atlassian 값 3개가 있어야 활성화된다.
-> 현재 Confluence 실구현은 `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`, `ATLASSIAN_CONFLUENCE_SPACE`가 있어야 활성화된다.
+> 현재 Confluence 실구현은 `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`, `ATLASSIAN_CONFLUENCE_SPACE`와, `ATLASSIAN_CONFLUENCE_BASE_URL` 또는 `ATLASSIAN_BASE_URL` 중 하나가 있어야 활성화된다.
 > 현재 기준선은 Outlook SMTP 수동 발송과 Teams 웹훅 셀프 알림이다.
 > Outlook 발송에는 SMTP 자격 증명이 필요하고, Teams 진행 알림에는 `TEAMS_PROGRESS_WEBHOOK_URL`이 필요하다.
 > 메일 수신 모니터링, Teams 양방향 응답 수집, Graph 기반 권한 모델은 현재 baseline에 포함되지 않는다.
