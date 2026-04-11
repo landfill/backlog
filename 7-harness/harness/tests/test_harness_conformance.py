@@ -46,6 +46,96 @@ def make_minimal_app(workspace: Path, *, app_name: str = "sample-app") -> Path:
     write_file(app_dir / "docs/status/ongoing/README.md", "# Ongoing\n")
     write_file(app_dir / "docs/status/completed/README.md", "# Completed\n")
     write_file(
+        app_dir / "docs/status/ongoing/sample-ongoing-plan.md",
+        "\n".join(
+            [
+                "# Sample Ongoing Plan",
+                "",
+                "## Goal",
+                "- keep the sample app aligned",
+                "",
+                "## Scope",
+                "- validate shared harness artifacts",
+                "",
+                "## Current Owner",
+                "- Lead",
+                "",
+                "## Current Step",
+                "- verify conformance",
+                "",
+                "## Current State",
+                "- active",
+                "",
+                "## Operating State",
+                "- checkpoint_ref: none",
+                "- cleanup_status: CLEAN",
+                "",
+                "## Verification",
+                "- verdict: APPROVED",
+                "- attempts: 1",
+                "",
+                "## Verification Evidence",
+                "- sample evidence",
+                "",
+                "## Failure Record",
+                "- root_cause: none",
+                "- rollback_point: none",
+                "",
+                "## Next Owner",
+                "- Lead",
+                "",
+                "## Next Step",
+                "- keep monitoring",
+                "",
+                "## Issues",
+                "- none",
+            ]
+        ),
+    )
+    write_file(
+        app_dir / "docs/status/ongoing/sample-review-report-lead.md",
+        "\n".join(
+            [
+                "# Sample Review",
+                "",
+                "## Verdict",
+                "- APPROVED",
+                "",
+                "## Reason",
+                "- sample reason",
+                "",
+                "## Scope",
+                "- validate sample output",
+                "",
+                "## Checked",
+                "- sample check",
+                "",
+                "## Passed",
+                "- yes",
+                "",
+                "## Evidence",
+                "- sample evidence",
+                "",
+                "## Checkpoint",
+                "- ref: none",
+                "",
+                "## Cleanup",
+                "- status: CLEAN",
+                "- cleaned: sample cleanup",
+                "- remaining: none",
+                "",
+                "## Open Risks",
+                "- none",
+                "",
+                "## Next Owner",
+                "- Lead",
+                "",
+                "## Next Step",
+                "- close the loop",
+            ]
+        ),
+    )
+    write_file(
         app_dir / "docs/status/tracker.md",
         "\n".join(
             [
@@ -144,6 +234,46 @@ class HarnessConformanceTests(unittest.TestCase):
 
             self.assertTrue(
                 any("invalid verdict" in issue for issue in issues),
+                issues,
+            )
+
+    def test_invalid_ongoing_plan_attempts_is_reported(self) -> None:
+        module = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            app_dir = make_minimal_app(workspace)
+            write_file(
+                app_dir / "docs/status/ongoing/sample-ongoing-plan.md",
+                (app_dir / "docs/status/ongoing/sample-ongoing-plan.md")
+                .read_text(encoding="utf-8")
+                .replace("- attempts: 1", "- attempts: many"),
+            )
+
+            issues = module.validate_workspace(workspace)
+
+            self.assertTrue(
+                any("ongoing plan" in issue and "attempts" in issue for issue in issues),
+                issues,
+            )
+
+    def test_invalid_review_report_cleanup_status_is_reported(self) -> None:
+        module = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            app_dir = make_minimal_app(workspace)
+            write_file(
+                app_dir / "docs/status/ongoing/sample-review-report-lead.md",
+                (app_dir / "docs/status/ongoing/sample-review-report-lead.md")
+                .read_text(encoding="utf-8")
+                .replace("- status: CLEAN", "- status: MAYBE"),
+            )
+
+            issues = module.validate_workspace(workspace)
+
+            self.assertTrue(
+                any("review report" in issue and "cleanup status" in issue for issue in issues),
                 issues,
             )
 

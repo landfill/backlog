@@ -4,7 +4,7 @@
 이 폴더는 repository-level harness의 최소 계약을 machine-readable 형태로 둔다.
 
 ## Current Schemas
-- `app-harness-contract.json`: 앱 하니스의 필수 문서, 역할 매핑, tracker 최소 필드를 정의한다.
+- `app-harness-contract.json`: 앱 하니스의 필수 문서, 역할 매핑, tracker/ongoing plan/review report 최소 필드를 정의한다.
 
 ## Rule
 - prose 문서에서 반복적으로 깨지는 공통 규칙만 이 폴더로 올린다.

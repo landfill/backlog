@@ -66,5 +66,63 @@
       "REMAINING_OK",
       "BLOCKED"
     ]
+  },
+  "ongoing_plan": {
+    "glob": "docs/status/ongoing/*ongoing-plan.md",
+    "required_sections": [
+      "Goal",
+      "Scope",
+      "Current Owner",
+      "Current Step",
+      "Current State",
+      "Operating State",
+      "Verification",
+      "Verification Evidence",
+      "Failure Record",
+      "Next Owner",
+      "Next Step",
+      "Issues"
+    ],
+    "allowed_verdicts": [
+      "APPROVED",
+      "CHANGES_REQUESTED",
+      "BLOCKED",
+      "SKIPPED"
+    ],
+    "allowed_cleanup_statuses": [
+      "CLEAN",
+      "REMAINING_OK",
+      "BLOCKED"
+    ]
+  },
+  "review_report": {
+    "globs": [
+      "docs/status/ongoing/*review-report*.md",
+      "docs/status/completed/*review-report*.md"
+    ],
+    "required_sections": [
+      "Verdict",
+      "Reason",
+      "Scope",
+      "Checked",
+      "Passed",
+      "Evidence",
+      "Checkpoint",
+      "Cleanup",
+      "Open Risks",
+      "Next Owner",
+      "Next Step"
+    ],
+    "allowed_verdicts": [
+      "APPROVED",
+      "CHANGES_REQUESTED",
+      "BLOCKED",
+      "SKIPPED"
+    ],
+    "allowed_cleanup_statuses": [
+      "CLEAN",
+      "REMAINING_OK",
+      "BLOCKED"
+    ]
   }
 }

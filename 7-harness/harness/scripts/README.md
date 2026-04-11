@@ -13,6 +13,7 @@
 
 ## Current Scripts
 - `check_harness_conformance.py`: repository-level 계약(`harness/core/schemas/app-harness-contract.json`)에 따라 앱 하니스의 최소 적합성을 검사한다.
+  - 현재 범위: 필수 문서, 역할 매핑, `tracker.md`, `ongoing-plan`, `review-report`
 
 ## CI Usage
 - `.github/workflows/harness-conformance.yml`은 conformance 검사기와 대표 앱 런타임 테스트를 pull request와 `main` push에서 함께 실행한다.
