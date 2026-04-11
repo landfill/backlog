@@ -1,0 +1,29 @@
+name: Harness Conformance
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  harness-conformance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Validate app harness conformance
+        run: python3 harness/scripts/check_harness_conformance.py .
+
+      - name: Run harness conformance tests
+        run: python3 -m unittest harness/tests/test_harness_conformance.py -v
+
+      - name: Run common-employee runtime tests
+        run: python3 -m unittest common-employee/tests/test_runtime_service.py -v

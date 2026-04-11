@@ -87,6 +87,21 @@ def make_minimal_app(workspace: Path, *, app_name: str = "sample-app") -> Path:
 
 
 class HarnessConformanceTests(unittest.TestCase):
+    def test_ci_workflow_runs_conformance_and_runtime_tests(self) -> None:
+        workflow_path = REPO_ROOT / ".github/workflows/harness-conformance.yml"
+
+        self.assertTrue(workflow_path.exists())
+        workflow_text = workflow_path.read_text(encoding="utf-8")
+        self.assertIn("python3 harness/scripts/check_harness_conformance.py .", workflow_text)
+        self.assertIn(
+            "python3 -m unittest harness/tests/test_harness_conformance.py -v",
+            workflow_text,
+        )
+        self.assertIn(
+            "python3 -m unittest common-employee/tests/test_runtime_service.py -v",
+            workflow_text,
+        )
+
     def test_current_workspace_conforms_for_common_employee(self) -> None:
         module = load_checker_module()
 
