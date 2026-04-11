@@ -54,3 +54,4 @@
 - 마지막 안전 지점과 검증 근거를 함께 갱신한다.
 - 같은 `root_cause`가 반복될 때 시도 횟수를 누적한다.
 - 작업이 끝나면 앱의 `docs/status/completed/` 폴더로 옮긴다.
+- 활성 작업의 ongoing plan 파일명은 `{slug}-ongoing-plan.md` 형식을 기본으로 하고 같은 `{slug}`의 task brief와 짝을 이뤄야 한다.

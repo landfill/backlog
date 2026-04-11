@@ -56,6 +56,14 @@ def section_has_bullet_content(section_body: str) -> bool:
     )
 
 
+def resolve_active_work_path(app_dir: Path, tracker_text: str) -> Path | None:
+    keyed = parse_keyed_lines(tracker_text)
+    paths = keyed.get("path", [])
+    if not paths or not paths[0]:
+        return None
+    return app_dir / paths[0]
+
+
 def validate_tracker(app_dir: Path, contract: dict) -> list[str]:
     tracker_path = app_dir / "docs/status/tracker.md"
     text = tracker_path.read_text(encoding="utf-8")
@@ -97,6 +105,48 @@ def validate_tracker(app_dir: Path, contract: dict) -> list[str]:
         issues.append(
             f"{tracker_path}: attempts must be a non-negative integer, got `{attempts[0]}`."
         )
+
+    active_work = contract["active_work"]
+    paths = keyed.get("path", [])
+    if paths:
+        current_work_path = paths[0]
+        active_dir = active_work["active_dir"]
+        task_brief_suffix = active_work["task_brief_suffix"]
+        if not current_work_path.startswith(f"{active_dir}/"):
+            issues.append(
+                f"{tracker_path}: Current Work.path must point to an active task brief under `{active_dir}/`."
+            )
+        elif not current_work_path.endswith(task_brief_suffix):
+            issues.append(
+                f"{tracker_path}: Current Work.path must point to an active task brief ending with `{task_brief_suffix}`."
+            )
+        else:
+            resolved_path = app_dir / current_work_path
+            if not resolved_path.exists():
+                issues.append(
+                    f"{tracker_path}: Current Work.path points to missing active task brief `{current_work_path}`."
+                )
+
+    return issues
+
+
+def validate_task_brief(path: Path, contract: dict) -> list[str]:
+    text = path.read_text(encoding="utf-8")
+    sections = parse_markdown_sections(text)
+    task_brief_contract = contract["task_brief"]
+    issues: list[str] = []
+
+    for section in task_brief_contract["required_sections"]:
+        if section not in sections:
+            issues.append(f"{path}: task brief missing required section `{section}`.")
+
+    for section in task_brief_contract["required_sections"]:
+        if section in sections and not section_has_bullet_content(sections[section]):
+            issues.append(f"{path}: task brief section `{section}` must contain a bullet value.")
+
+    for section in task_brief_contract["optional_sections"]:
+        if section in sections and not section_has_bullet_content(sections[section]):
+            issues.append(f"{path}: task brief optional section `{section}` must contain a bullet value when present.")
 
     return issues
 
@@ -222,6 +272,51 @@ def validate_review_report(path: Path, contract: dict) -> list[str]:
     return issues
 
 
+def validate_active_workset(app_dir: Path, contract: dict) -> list[str]:
+    tracker_path = app_dir / "docs/status/tracker.md"
+    if not tracker_path.exists():
+        return []
+
+    tracker_text = tracker_path.read_text(encoding="utf-8")
+    current_work_path = resolve_active_work_path(app_dir, tracker_text)
+    if current_work_path is None:
+        return []
+
+    active_work = contract["active_work"]
+    active_dir = app_dir / active_work["active_dir"]
+    task_brief_suffix = active_work["task_brief_suffix"]
+    issues: list[str] = []
+
+    try:
+        relative_current_work_path = current_work_path.relative_to(app_dir)
+    except ValueError:
+        issues.append(f"{tracker_path}: Current Work.path must stay within the app directory.")
+        return issues
+
+    if current_work_path.parent != active_dir:
+        return issues
+    if not current_work_path.name.endswith(task_brief_suffix):
+        return issues
+    if not current_work_path.exists():
+        return issues
+
+    slug = current_work_path.name[: -len(task_brief_suffix)]
+
+    ongoing_matches = sorted(active_dir.glob(active_work["ongoing_plan_pattern"].format(slug=slug)))
+    if len(ongoing_matches) != 1:
+        issues.append(
+            f"{tracker_path}: expected exactly one matching active ongoing plan for slug `{slug}`, found {len(ongoing_matches)}."
+        )
+
+    review_matches = sorted(active_dir.glob(active_work["review_report_pattern"].format(slug=slug)))
+    if len(review_matches) > 1:
+        issues.append(
+            f"{tracker_path}: expected zero or one matching active review report for slug `{slug}`, found {len(review_matches)}."
+        )
+
+    return issues
+
+
 def validate_app(app_dir: Path, contract: dict) -> list[str]:
     issues: list[str] = []
 
@@ -248,6 +343,10 @@ def validate_app(app_dir: Path, contract: dict) -> list[str]:
     if tracker_path.exists():
         issues.extend(validate_tracker(app_dir, contract))
 
+    task_brief_glob = contract["task_brief"]["glob"]
+    for task_brief_path in sorted(app_dir.glob(task_brief_glob)):
+        issues.extend(validate_task_brief(task_brief_path, contract))
+
     ongoing_glob = contract["ongoing_plan"]["glob"]
     for ongoing_path in sorted(app_dir.glob(ongoing_glob)):
         issues.extend(validate_ongoing_plan(ongoing_path, contract))
@@ -255,6 +354,8 @@ def validate_app(app_dir: Path, contract: dict) -> list[str]:
     for review_glob in contract["review_report"]["globs"]:
         for review_path in sorted(app_dir.glob(review_glob)):
             issues.extend(validate_review_report(review_path, contract))
+
+    issues.extend(validate_active_workset(app_dir, contract))
 
     return issues
 

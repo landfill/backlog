@@ -44,3 +44,4 @@
 - 단계가 바뀌면 바로 갱신한다.
 - 판정 값과 시도 횟수는 비워 두지 않는다.
 - 마지막 안전 지점과 cleanup 상태가 바뀌면 함께 갱신한다.
+- `Current Work.path`는 `docs/status/ongoing/{slug}-task-brief.md`를 가리켜야 한다.

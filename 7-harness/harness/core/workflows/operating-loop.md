@@ -75,3 +75,10 @@
 - tracker는 현재 verdict, attempts, checkpoint 상태, cleanup 상태를 보여야 한다.
 - ongoing plan은 현재 단계, evidence, 실패 원인, 다음 행동을 보여야 한다.
 - review report는 handoff 판정, 검증 근거, cleanup 결과, open risks, next owner, next step을 보여야 한다.
+
+## 13. Active Artifact Linkage
+- 활성 작업은 하나의 `{slug}`로 연결한다.
+- `tracker.md`의 `Current Work.path`는 `docs/status/ongoing/{slug}-task-brief.md`를 가리킨다.
+- 같은 활성 작업의 ongoing plan은 `docs/status/ongoing/{slug}-ongoing-plan.md` 형식을 따른다.
+- 같은 활성 작업의 review report는 `docs/status/ongoing/{slug}-review-report-<role>.md` 형식을 따른다.
+- repository-level 자동 검사는 활성 작업에 한해 위 파일명 연결 규칙을 검증한다.

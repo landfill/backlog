@@ -55,3 +55,4 @@
 - 확인한 것과 남은 위험을 분리해서 적는다.
 - 다음 단계는 한 가지 행동으로 적는다.
 - 다음 단계가 바로 이어받을 수 있게 쓴다.
+- 활성 작업의 review report 파일명은 `{slug}-review-report-<role>.md` 형식을 따르고 같은 `{slug}`의 active work chain에만 연결한다.

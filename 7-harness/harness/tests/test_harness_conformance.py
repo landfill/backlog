@@ -46,6 +46,41 @@ def make_minimal_app(workspace: Path, *, app_name: str = "sample-app") -> Path:
     write_file(app_dir / "docs/status/ongoing/README.md", "# Ongoing\n")
     write_file(app_dir / "docs/status/completed/README.md", "# Completed\n")
     write_file(
+        app_dir / "docs/status/ongoing/sample-task-brief.md",
+        "\n".join(
+            [
+                "# Sample Task Brief",
+                "",
+                "## Goal",
+                "- keep the sample app aligned",
+                "",
+                "## Primary Output",
+                "- aligned active-work artifacts",
+                "",
+                "## In Scope",
+                "- validate shared harness artifacts",
+                "",
+                "## Out of Scope",
+                "- archive migration",
+                "",
+                "## Done When",
+                "- the active work chain is valid",
+                "",
+                "## Verification Plan",
+                "- run the shared conformance checker",
+                "",
+                "## Inputs",
+                "- current tracker state",
+                "",
+                "## Expected Output",
+                "- a passing conformance report",
+                "",
+                "## Risk Notes",
+                "- none",
+            ]
+        ),
+    )
+    write_file(
         app_dir / "docs/status/ongoing/sample-ongoing-plan.md",
         "\n".join(
             [
@@ -237,6 +272,49 @@ class HarnessConformanceTests(unittest.TestCase):
                 issues,
             )
 
+    def test_invalid_task_brief_is_reported(self) -> None:
+        module = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            app_dir = make_minimal_app(workspace)
+            write_file(
+                app_dir / "docs/status/ongoing/sample-task-brief.md",
+                (app_dir / "docs/status/ongoing/sample-task-brief.md")
+                .read_text(encoding="utf-8")
+                .replace("## Done When\n- the active work chain is valid\n\n", ""),
+            )
+
+            issues = module.validate_workspace(workspace)
+
+            self.assertTrue(
+                any("task brief" in issue and "Done When" in issue for issue in issues),
+                issues,
+            )
+
+    def test_tracker_path_must_point_to_active_task_brief(self) -> None:
+        module = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            app_dir = make_minimal_app(workspace)
+            write_file(
+                app_dir / "docs/status/tracker.md",
+                (app_dir / "docs/status/tracker.md")
+                .read_text(encoding="utf-8")
+                .replace(
+                    "docs/status/ongoing/sample-task-brief.md",
+                    "docs/status/completed/sample-task-brief.md",
+                ),
+            )
+
+            issues = module.validate_workspace(workspace)
+
+            self.assertTrue(
+                any("Current Work.path" in issue and "task brief" in issue for issue in issues),
+                issues,
+            )
+
     def test_invalid_ongoing_plan_attempts_is_reported(self) -> None:
         module = load_checker_module()
 
@@ -274,6 +352,40 @@ class HarnessConformanceTests(unittest.TestCase):
 
             self.assertTrue(
                 any("review report" in issue and "cleanup status" in issue for issue in issues),
+                issues,
+            )
+
+    def test_missing_matching_active_ongoing_plan_is_reported(self) -> None:
+        module = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            app_dir = make_minimal_app(workspace)
+            (app_dir / "docs/status/ongoing/sample-ongoing-plan.md").unlink()
+
+            issues = module.validate_workspace(workspace)
+
+            self.assertTrue(
+                any("matching active ongoing plan" in issue for issue in issues),
+                issues,
+            )
+
+    def test_multiple_matching_active_review_reports_are_reported(self) -> None:
+        module = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            app_dir = make_minimal_app(workspace)
+            write_file(
+                app_dir / "docs/status/ongoing/sample-review-report-guardian.md",
+                (app_dir / "docs/status/ongoing/sample-review-report-lead.md")
+                .read_text(encoding="utf-8"),
+            )
+
+            issues = module.validate_workspace(workspace)
+
+            self.assertTrue(
+                any("matching active review report" in issue for issue in issues),
                 issues,
             )
 

@@ -67,6 +67,22 @@
       "BLOCKED"
     ]
   },
+  "task_brief": {
+    "glob": "docs/status/ongoing/*task-brief.md",
+    "required_sections": [
+      "Goal",
+      "Primary Output",
+      "In Scope",
+      "Out of Scope",
+      "Done When",
+      "Verification Plan"
+    ],
+    "optional_sections": [
+      "Inputs",
+      "Expected Output",
+      "Risk Notes"
+    ]
+  },
   "ongoing_plan": {
     "glob": "docs/status/ongoing/*ongoing-plan.md",
     "required_sections": [
@@ -124,5 +140,11 @@
       "REMAINING_OK",
       "BLOCKED"
     ]
+  },
+  "active_work": {
+    "active_dir": "docs/status/ongoing",
+    "task_brief_suffix": "-task-brief.md",
+    "ongoing_plan_pattern": "{slug}-ongoing-plan*.md",
+    "review_report_pattern": "{slug}-review-report*.md"
   }
 }
