@@ -8,6 +8,7 @@
 - repository-level 문서는 모든 앱에 공통으로 적용되는 규칙만 다룬다.
 - app-level 문서는 도메인, 에이전트 행동, 연동, 지식 체계를 다룬다.
 - 공통 규칙으로 올릴 수 없는 내용은 app-level에 둔다.
+- repository-level에서 강제해야 하는 최소 계약은 `harness/core/schemas/`에 machine-readable 형태로 둔다.
 
 ## 3. Ownership
 - PM은 범위, 완료 기준, 문서 정합성을 관리한다.
@@ -19,8 +20,10 @@
 - 한 번의 변경에는 한 가지 목적만 담는다.
 - repository-level 문서를 바꾸면 관련 app 문서도 함께 점검한다.
 - app-level 문서를 바꿀 때는 repository-level 규칙을 낮추지 않는다.
+- 공통 계약이 추가되면 `harness/scripts/`의 conformance 검사도 함께 갱신한다.
 
 ## 5. Review Rule
 - 문서와 구현이 다르면 먼저 문서가 맞는지 확인한다.
 - 문서가 더 이상 맞지 않으면 범위를 줄이거나 문서를 고친다.
 - 같은 이유로 수정이 반복되면 공통 규칙으로 올릴지 검토한다.
+- 반복적으로 깨지는 앱 규칙은 prose 문서만 두지 말고 schema나 lint 규칙으로 승격한다.

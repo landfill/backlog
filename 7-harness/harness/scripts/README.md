@@ -9,6 +9,10 @@
 - git checkpoint: 작업 지점 저장
 - git restore: checkpoint로 복원
 - artifact 검사: tracker, ongoing plan, review report 필수 필드 확인
+- harness conformance 검사: 앱 하니스 필수 문서, 역할 매핑, tracker 필드 검증
+
+## Current Scripts
+- `check_harness_conformance.py`: repository-level 계약(`harness/core/schemas/app-harness-contract.json`)에 따라 앱 하니스의 최소 적합성을 검사한다.
 
 ## Rule
 - 스크립트는 문서의 규칙을 자동화한 것이다.

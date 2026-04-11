@@ -1,0 +1,70 @@
+{
+  "app_discovery": {
+    "required_path": "docs/PLANS.md"
+  },
+  "required_files": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/PLANS.md",
+    "docs/SECURITY.md",
+    "docs/RELIABILITY.md",
+    "docs/status/README.md",
+    "docs/status/tracker.md",
+    "docs/status/ongoing/README.md",
+    "docs/status/completed/README.md"
+  ],
+  "required_role_mapping_patterns": [
+    {
+      "role": "PM",
+      "pattern": "repository-level `PM`"
+    },
+    {
+      "role": "Coder",
+      "pattern": "repository-level `Coder`"
+    },
+    {
+      "role": "Security Reviewer",
+      "pattern": "repository-level `Security Reviewer`"
+    },
+    {
+      "role": "Tester",
+      "pattern": "repository-level[^\\n]*`Tester`"
+    }
+  ],
+  "tracker": {
+    "required_sections": [
+      "## Current Phase",
+      "## Current Step",
+      "## Current Work",
+      "## Verification",
+      "## Operating State",
+      "## Next Owner",
+      "## Next Action"
+    ],
+    "required_fields": [
+      "phase",
+      "status",
+      "owner",
+      "state",
+      "title",
+      "path",
+      "verdict",
+      "attempts",
+      "evidence",
+      "checkpoint_ref",
+      "cleanup_status",
+      "next"
+    ],
+    "allowed_verdicts": [
+      "APPROVED",
+      "CHANGES_REQUESTED",
+      "BLOCKED",
+      "SKIPPED"
+    ],
+    "allowed_cleanup_statuses": [
+      "CLEAN",
+      "REMAINING_OK",
+      "BLOCKED"
+    ]
+  }
+}

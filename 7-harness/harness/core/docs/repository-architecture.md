@@ -17,7 +17,7 @@
 - `workflows/`: pipeline, operating loop, handoff, rollback, checkpoint 흐름
 - `platforms/`: Cursor, Claude Code 같은 플랫폼 가이드
 - `templates/`: 반복 문서 템플릿
-- `schemas/`: 추후 machine-readable schema 자리
+- `schemas/`: repository-level contract와 conformance 규칙을 두는 machine-readable schema
 
 `harness/scripts/`는 저장소 공통 검사와 자동화 스크립트를 둔다.
 `harness/runtime/`는 cleanup snapshot 같은 runtime artifact를 둔다.
