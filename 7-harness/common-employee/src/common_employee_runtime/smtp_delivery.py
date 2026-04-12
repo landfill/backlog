@@ -14,6 +14,14 @@ class SMTPDeliveryError(RuntimeError):
 
 
 class SMTPDeliveryConfig:
+    REQUIRED_KEYS = (
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USERNAME",
+        "SMTP_PASSWORD",
+        "SMTP_FROM_ADDRESS",
+    )
+
     def __init__(
         self,
         *,
@@ -40,6 +48,20 @@ class SMTPDeliveryConfig:
         for key, value in os.environ.items():
             merged[key] = value
         return cls.from_mapping(merged)
+
+    @classmethod
+    def readiness_from_workspace(cls, workspace: Path) -> dict[str, object]:
+        dotenv_values = _read_dotenv(workspace / ".env")
+        merged = dict(dotenv_values)
+        for key, value in os.environ.items():
+            merged[key] = value
+        present_keys = [key for key in cls.REQUIRED_KEYS if str(merged.get(key, "")).strip()]
+        missing_keys = [key for key in cls.REQUIRED_KEYS if key not in present_keys]
+        return {
+            "configured": not missing_keys,
+            "present_keys": present_keys,
+            "missing_keys": missing_keys,
+        }
 
     @classmethod
     def from_mapping(cls, mapping: dict[str, str] | os._Environ[str]) -> SMTPDeliveryConfig | None:

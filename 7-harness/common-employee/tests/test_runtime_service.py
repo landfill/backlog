@@ -337,6 +337,67 @@ class RuntimeServiceTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertIn('"state": "completed"', completed.stdout)
 
+    def test_cli_reports_manual_delivery_smoke_readiness(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            (workspace / ".env").write_text(
+                "\n".join(
+                    [
+                        "SMTP_HOST=smtp.example.com",
+                        "SMTP_PORT=587",
+                        "SMTP_USERNAME=mailer@example.com",
+                        "SMTP_PASSWORD=secret-password",
+                        "SMTP_FROM_ADDRESS=agent@example.com",
+                        "SMTP_FROM_NAME=Common Employee",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "common_employee_runtime.cli",
+                    "manual-delivery-smoke",
+                    "--workspace",
+                    str(workspace),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                env={"PYTHONPATH": str(SRC_ROOT)},
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertIn('"smoke_type": "manual-delivery"', completed.stdout)
+            self.assertIn('"artifact_path"', completed.stdout)
+            self.assertIn('"configured": true', completed.stdout)
+            self.assertIn('"configured": false', completed.stdout)
+
+    def test_cli_manual_delivery_smoke_returns_nonzero_when_explicit_send_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "common_employee_runtime.cli",
+                    "manual-delivery-smoke",
+                    "--workspace",
+                    str(workspace),
+                    "--send-outlook",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                env={"PYTHONPATH": str(SRC_ROOT)},
+            )
+
+            self.assertEqual(completed.returncode, 1)
+            self.assertIn('"sent": false', completed.stdout)
+
     def test_web_console_submits_payload_and_serves_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             workspace = Path(tempdir)
@@ -1011,6 +1072,98 @@ class RuntimeServiceTests(unittest.TestCase):
             teams_result = service.send_teams_message("processing complete")
             self.assertTrue(teams_result["sent"])
             self.assertEqual(service.teams_webhook_client.payloads[0], "processing complete")
+
+    def test_service_records_standalone_manual_delivery_smoke_evidence(self) -> None:
+        class FakeSMTPClient:
+            def __init__(self) -> None:
+                self.sent_messages: list[dict[str, object]] = []
+
+            def send_message(self, *, recipients: list[str], subject: str, html_body: str) -> dict[str, object]:
+                payload = {
+                    "sent": True,
+                    "recipients": recipients,
+                    "subject": subject,
+                    "html_body": html_body,
+                }
+                self.sent_messages.append(payload)
+                return payload
+
+        class FakeTeamsWebhookClient:
+            def __init__(self) -> None:
+                self.payloads: list[str] = []
+
+            def send_message(self, text: str) -> dict[str, object]:
+                self.payloads.append(text)
+                return {"sent": True, "text": text}
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            service = AutonomousRuntimeService(
+                workspace,
+                smtp_client=FakeSMTPClient(),
+                teams_webhook_client=FakeTeamsWebhookClient(),
+            )
+
+            smoke = service.run_manual_delivery_smoke(
+                outlook_recipients=["leader@example.com"],
+                outlook_subject="SMTP smoke",
+                outlook_html_body="<p>Smoke</p>",
+                teams_message="Webhook smoke",
+                send_outlook=True,
+                send_teams=True,
+            )
+
+            self.assertEqual(smoke["smoke_type"], "manual-delivery")
+            self.assertTrue(smoke["outlook"]["sent"])
+            self.assertTrue(smoke["teams"]["sent"])
+            artifact_path = Path(str(smoke["artifact_path"]))
+            self.assertTrue(artifact_path.exists())
+            artifact_text = artifact_path.read_text(encoding="utf-8")
+            self.assertIn("leader@example.com", artifact_text)
+            self.assertIn("Webhook smoke", artifact_text)
+
+    def test_service_manual_delivery_smoke_defaults_to_readiness_only(self) -> None:
+        class FakeSMTPClient:
+            def __init__(self) -> None:
+                self.sent_messages: list[dict[str, object]] = []
+
+            def send_message(self, *, recipients: list[str], subject: str, html_body: str) -> dict[str, object]:
+                payload = {"sent": True, "recipients": recipients, "subject": subject, "html_body": html_body}
+                self.sent_messages.append(payload)
+                return payload
+
+        class FakeTeamsWebhookClient:
+            def __init__(self) -> None:
+                self.payloads: list[str] = []
+
+            def send_message(self, text: str) -> dict[str, object]:
+                self.payloads.append(text)
+                return {"sent": True, "text": text}
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            service = AutonomousRuntimeService(
+                workspace,
+                smtp_client=FakeSMTPClient(),
+                teams_webhook_client=FakeTeamsWebhookClient(),
+            )
+
+            smoke = service.run_manual_delivery_smoke()
+
+            self.assertFalse(smoke["executed"]["outlook"])
+            self.assertFalse(smoke["executed"]["teams"])
+            self.assertEqual(service.smtp_client.sent_messages, [])
+            self.assertEqual(service.teams_webhook_client.payloads, [])
+
+    def test_service_manual_delivery_smoke_writes_unique_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            workspace = Path(tempdir)
+            service = AutonomousRuntimeService(workspace)
+
+            first = service.run_manual_delivery_smoke()
+            second = service.run_manual_delivery_smoke()
+
+            self.assertNotEqual(first["artifact_path"], second["artifact_path"])
 
     def test_runtime_emits_teams_webhook_alerts_for_completed_and_blocked_runs(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:

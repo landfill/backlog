@@ -100,6 +100,14 @@ TEAMS_PROGRESS_WEBHOOK_URL=<진행 알림용 Teams Incoming Webhook URL>
 > 메일 수신 모니터링, Teams 양방향 응답 수집, Graph 기반 권한 모델은 현재 baseline에 포함되지 않는다.
 > 값은 환경 변수 또는 `common-employee/.env` 중 하나로 제공할 수 있다.
 
+### 운영 smoke 확인
+
+- readiness 확인:
+  - `python3 -m common_employee_runtime.cli manual-delivery-smoke --workspace common-employee`
+- 실제 smoke 발송:
+  - `python3 -m common_employee_runtime.cli manual-delivery-smoke --workspace common-employee --send-outlook --outlook-to <recipient> --send-teams`
+- 위 명령은 standalone smoke artifact를 `docs/generated/manual-delivery-smokes/` 아래에 남긴다.
+
 ---
 
 ## 권한 범위 (Least Privilege)

@@ -13,6 +13,8 @@ class TeamsWebhookError(RuntimeError):
 
 
 class TeamsWebhookConfig:
+    REQUIRED_KEYS = ("TEAMS_PROGRESS_WEBHOOK_URL",)
+
     def __init__(self, *, webhook_url: str) -> None:
         self.webhook_url = webhook_url
 
@@ -23,6 +25,20 @@ class TeamsWebhookConfig:
         for key, value in os.environ.items():
             merged[key] = value
         return cls.from_mapping(merged)
+
+    @classmethod
+    def readiness_from_workspace(cls, workspace: Path) -> dict[str, object]:
+        dotenv_values = _read_dotenv(workspace / ".env")
+        merged = dict(dotenv_values)
+        for key, value in os.environ.items():
+            merged[key] = value
+        present_keys = [key for key in cls.REQUIRED_KEYS if str(merged.get(key, "")).strip()]
+        missing_keys = [key for key in cls.REQUIRED_KEYS if key not in present_keys]
+        return {
+            "configured": not missing_keys,
+            "present_keys": present_keys,
+            "missing_keys": missing_keys,
+        }
 
     @classmethod
     def from_mapping(cls, mapping: dict[str, str] | os._Environ[str]) -> TeamsWebhookConfig | None:

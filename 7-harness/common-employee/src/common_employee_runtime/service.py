@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from html import escape as html_escape
+import json
 from pathlib import Path
 import re
+from uuid import uuid4
 
 from .confluence import ConfluenceClient, ConfluenceConfig
 from .jira import JiraClient, JiraIssue
 from .models import CleanupStatus, GateRecord, Verdict
-from .smtp_delivery import SMTPDeliveryClient
+from .smtp_delivery import SMTPDeliveryClient, SMTPDeliveryConfig
 from .store import RuntimeStore
-from .teams_webhook import TeamsWebhookClient
+from .teams_webhook import TeamsWebhookClient, TeamsWebhookConfig
 
 
 DEFAULT_NOW = datetime(2026, 4, 6, 9, 0, 0)
@@ -394,6 +396,65 @@ class AutonomousRuntimeService:
         if self.teams_webhook_client is None:
             raise RuntimeError("Teams webhook client is not configured in the environment.")
         return self.teams_webhook_client.send_message(message_text)
+
+    def get_manual_delivery_smoke_readiness(self) -> dict[str, object]:
+        return {
+            "smoke_type": "manual-delivery",
+            "outlook": SMTPDeliveryConfig.readiness_from_workspace(self.workspace),
+            "teams": TeamsWebhookConfig.readiness_from_workspace(self.workspace),
+        }
+
+    def run_manual_delivery_smoke(
+        self,
+        *,
+        outlook_recipients: list[str] | None = None,
+        outlook_subject: str = "common-employee Outlook SMTP smoke",
+        outlook_html_body: str = "<p>common-employee Outlook SMTP smoke</p>",
+        teams_message: str = "common-employee Teams webhook smoke",
+        send_outlook: bool = False,
+        send_teams: bool = False,
+    ) -> dict[str, object]:
+        readiness = self.get_manual_delivery_smoke_readiness()
+        result: dict[str, object] = {
+            "smoke_type": "manual-delivery",
+            "outlook": dict(readiness["outlook"]),
+            "teams": dict(readiness["teams"]),
+            "executed": {"outlook": send_outlook, "teams": send_teams},
+        }
+
+        if send_outlook:
+            try:
+                result["outlook"] = {
+                    **dict(readiness["outlook"]),
+                    **self.send_outlook_message(
+                        outlook_recipients or [],
+                        subject=outlook_subject,
+                        html_body=outlook_html_body,
+                    ),
+                }
+            except Exception as error:
+                result["outlook"] = {
+                    **dict(readiness["outlook"]),
+                    "sent": False,
+                    "error": str(error),
+                }
+
+        if send_teams:
+            try:
+                result["teams"] = {
+                    **dict(readiness["teams"]),
+                    **self.send_teams_message(teams_message),
+                }
+            except Exception as error:
+                result["teams"] = {
+                    **dict(readiness["teams"]),
+                    "sent": False,
+                    "error": str(error),
+                }
+
+        artifact_path = self._write_manual_delivery_smoke_artifact(result)
+        result["artifact_path"] = str(artifact_path)
+        return result
 
     def list_jira_issues(self, *, jql: str | None = None, max_results: int = 10) -> list[dict[str, object]]:
         if self.jira_client is None:
@@ -996,3 +1057,15 @@ class AutonomousRuntimeService:
             f"- gates: {gate_summary}\n"
             "- local artifacts and decision log were updated in the service workspace."
         )
+
+    def _write_manual_delivery_smoke_artifact(self, result: dict[str, object]) -> Path:
+        now = datetime.now(UTC)
+        timestamp = now.strftime("%Y%m%dT%H%M%SZ")
+        artifact_suffix = uuid4().hex[:8]
+        path = (
+            self.workspace
+            / f"docs/generated/manual-delivery-smokes/{now.strftime('%Y/%m')}"
+            / f"{timestamp}-{artifact_suffix}-manual-delivery-smoke.json"
+        )
+        self._write_text(path, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        return path

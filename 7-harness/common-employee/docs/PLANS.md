@@ -19,6 +19,7 @@
 - Confluence live integration 구현 및 live smoke verification 완료
 - Microsoft Graph messaging phase는 히스토리로 보존
 - 현재 M365 기준선은 Outlook 수동 SMTP 발송 + Teams 웹훅 셀프 알림으로 재정렬 중
+- manual-delivery smoke readiness/evidence surface 구현 완료, 실제 운영값 smoke는 후속 실행 대기
 - 남은 예정 문서는 후속 backlog로 관리
 
 ---
